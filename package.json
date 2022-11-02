@@ -1,5 +1,5 @@
 {
-  "name": "paper",
+  "name": "@flex-office/paper",
   "version": "0.12.16",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
