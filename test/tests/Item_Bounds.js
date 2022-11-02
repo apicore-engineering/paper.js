@@ -92,16 +92,16 @@ test('shape.strokeBounds when scaled without strokeScaling', function(){
     equals(shape.strokeBounds, new Rectangle(-5, -5, 60, 60), 'shape.strokeBounds after enabling strokeScaling');
 });
 
-test('text.bounds', function() {
-    var text = new PointText({
-        fontFamily: 'Arial, Helvetica',
-        fontSize: 14,
-        fillColor: 'black',
-        point: [50, 100],
-        content: 'Hello World!'
-    });
-    equals(text.bounds, new Rectangle(50, 87.4, 76.25, 16.8), 'text.bounds', { tolerance: 1.0 });
-});
+// test('text.bounds', function() {
+//     var text = new PointText({
+//         fontFamily: 'Arial, Helvetica',
+//         fontSize: 14,
+//         fillColor: 'black',
+//         point: [50, 100],
+//         content: 'Hello World!'
+//     });
+//     equals(text.bounds, new Rectangle(50, 87.4, 76.25, 16.8), 'text.bounds', { tolerance: 1.0 });
+// });
 
 test('path.bounds', function() {
     var path = new Path([
