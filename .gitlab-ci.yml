@@ -1,0 +1,61 @@
+default:
+    image: ubuntu:latest
+    before_script:
+        - apt-get update --fix-missing
+        - apt -y install build-essential
+        - apt-get -y install git libcairo2-dev libpango1.0-dev libssl-dev libssl-dev libgif-dev
+        - yarn install --immutable
+        - |
+            {
+              echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
+              echo "${CI_API_V4_URL#https?}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
+            } | tee --append .npmrc
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+        - .npm/
+workflow:
+    rules:
+        - if: $CI_COMMIT_BRANCH
+variables:
+    NPM_TOKEN: ${CI_JOB_TOKEN}
+    OPENSSL_CONF: '/dev/null'
+stages:
+    - install_build
+    - test
+    - deploy
+
+install_yarn:
+    stage: install_build
+    image: node:lts
+    dependencies: []
+    script:
+        - yarn build
+        - yarn minify
+    artifacts:
+        expire_in: 30 mins
+        paths:
+            - dist
+
+test:
+    stage: test
+    image: node:lts
+    dependencies:
+        - install_yarn
+    script:
+        - yarn jshint
+        - yarn test
+
+deploy:
+    stage: deploy
+    image: node:14-buster
+    dependencies:
+        - install_yarn
+        - test
+    script:
+        - ls -al
+        - cat .npmrc
+        - npm publish
+    only:
+        - master
+

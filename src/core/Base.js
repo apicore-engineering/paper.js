@@ -175,7 +175,7 @@ statics: /** @lends Base */{
      *     returned or converted. `options.clone` controls whether passed
      *     objects should be cloned if they are already provided in the required
      *     type
-     * @param {Number} length the amount of elements that can be read
+     * @param {Number} amount the amount of elements that can be read
      */
     read: function(list, start, options, amount) {
         // See if it's called directly on Base, and if so, read value and return
@@ -675,6 +675,14 @@ statics: /** @lends Base */{
             for (var i = index + amount, l = list.length; i < l; i++)
                 list[i]._index = i;
             return removed;
+        }
+    },
+
+    insertAt: function () {
+        var args = Array.prototype.slice.call(arguments);
+        var insertArray = args.slice(2).reverse();
+        for (var i = 0; i < insertArray.length; i++) {
+            args[0].splice(args[1], 0, insertArray[i]);
         }
     },
 
