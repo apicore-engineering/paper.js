@@ -105,8 +105,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setBoundsGenerator: function (generator) {
-      if (!this._boundsGenerators.includes(generator)) {
-          throw new Error('Generator ' + generator + 'is not included in ' + this._boundsGenerators.toString());
+      if (this._boundsGenerators.indexOf(generator) === 0) {
+          throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
       }
 
       this._boundsGenerator = generator;
@@ -329,7 +329,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         // create div as well
         var div = document.createElement('div');
-        element.after(div);
+        container.appendChild(div);
         this._setDivStyles(div);
 
         element.value = '' + this._content;

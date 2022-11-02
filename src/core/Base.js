@@ -678,8 +678,12 @@ statics: /** @lends Base */{
         }
     },
 
-    insertAt(array, index, ...elementsArray) {
-        array.splice(index, 0, ...elementsArray);
+    insertAt: function () {
+        var args = Array.prototype.slice.call(arguments);
+        var insertArray = args.slice(2).reverse();
+        for (var i = 0; i < insertArray.length; i++) {
+            args[0].splice(args[1], 0, insertArray[i]);
+        }
     },
 
     /**
