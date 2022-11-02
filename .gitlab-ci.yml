@@ -55,6 +55,7 @@ deploy:
     script:
         - ls -al
         - cat .npmrc
+        - echo "${CI_API_V4_URL#https?}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
         - npm publish
     only:
         - master
