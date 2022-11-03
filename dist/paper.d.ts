@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.16 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.16-3-paper-d-ts-file-generation-in-the-install-pipeline - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,12 +9,108 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 20 17:38:51 2022 +0200
+ * Date: Thu Nov 3 00:01:16 2022 +0100
  *
  * This is an auto-generated type definition.
  */
 
 declare namespace paper {
+
+    type PointLike = (
+        Point
+        | [ number, number ]
+        | { x: number, y: number }
+        | { width: number, height: number }
+        | { angle: number, length: number }
+    )
+
+    type SizeLike = (
+        Size
+        | [ number, number ]
+        | { x: number, y: number }
+        | { width: number, height: number }
+    )
+
+    type RectangleLike = (
+        Rectangle
+        | [ number, number, number, number ]
+        | { x: number, y: number, width: number, height: number }
+        | { from: PointLike, to: PointLike }
+    )
+
+    /** 
+     * An AreaText item represents a piece of typography in your Paper.js
+     * project which starts from a certain point and extends by the amount of
+     * characters contained in it.
+     */
+    class AreaText extends TextItem {
+        /** 
+         * The rectangle text is wrapped around
+         */
+        rectangle: Rectangle
+
+        /** 
+         * Current justification of the TextArea
+         */
+        justification: string
+
+        /** 
+         * Define the mode of AreaText (can be edit mode or not edit mode).
+         * In the edit mode the special input
+         * field should open for the editing content
+         */
+        editMode: boolean
+
+        /** 
+         * ID of the HTML element
+         */
+        htmlId: string
+
+        /** 
+         * Defines the way of rendering text
+         * Default if fixed, meaning the overflown text will be drawn outside the bounds.
+         * If 'auto-width' then draw on one line. If 'auto-height' then adjust the height
+         * Bounds generator
+         */
+        boundsGenerator: string
+
+        /** 
+         * HTML element name
+         */
+        editElement: string
+
+
+        /** 
+         * Creates an area text item
+         * 
+         * @param point - the position where the text will start
+         */
+        constructor(point: RectangleLike)
+
+        /** 
+         * Creates an area text item from the properties described by an object
+         * literal.
+         * 
+         * @param object - an object containing properties describing the
+         *     path's attributes
+         */
+        constructor(object: object)
+
+        /** 
+         * The width of the rectangle is wrapped around
+         * 
+         * @param width - the number to set the width
+         */
+        setWidth(width: number): void
+
+        /** 
+         * The height of the rectangle is wrapped around
+         * 
+         * @param height - the number to set the height
+         */
+        setHeight(height: number): void
+
+    }
 
     /** 
      * All properties and functions that expect color values in the form
@@ -133,7 +229,7 @@ declare namespace paper {
         /** 
          * Creates a gradient Color object.
          */
-        constructor(gradient: Gradient, origin: Point, destination: Point, highlight?: Point)
+        constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike)
 
         /** 
          * Creates a HSB, HSL or gradient Color object from the properties of
@@ -540,7 +636,7 @@ declare namespace paper {
         /** 
          * Creates a new curve object.
          */
-        constructor(point1: Point, handle1: Point, handle2: Point, point2: Point)
+        constructor(point1: PointLike, handle1: PointLike, handle2: PointLike, point2: PointLike)
 
         /** 
          * Returns a copy of the curve.
@@ -782,7 +878,7 @@ declare namespace paper {
          * @return at most two curve-time parameters, where the curve is
          * tangential to the given tangent
          */
-        getTimesWithTangent(tangent: Point): number[]
+        getTimesWithTangent(tangent: PointLike): number[]
 
         /** 
          * Calculates the curve offset at the specified curve-time parameter on
@@ -802,7 +898,7 @@ declare namespace paper {
          * 
          * @return the curve location of the specified point
          */
-        getLocationOf(point: Point): CurveLocation
+        getLocationOf(point: PointLike): CurveLocation
 
         /** 
          * Returns the length of the path from its beginning up to up to the
@@ -812,7 +908,7 @@ declare namespace paper {
          * 
          * @return the length of the path up to the specified point
          */
-        getOffsetOf(point: Point): number
+        getOffsetOf(point: PointLike): number
 
         /** 
          * Returns the curve-time parameter of the specified point if it lies on the
@@ -824,7 +920,7 @@ declare namespace paper {
          * 
          * @return the curve-time parameter of the specified point
          */
-        getTimeOf(point: Point): number
+        getTimeOf(point: PointLike): number
 
         /** 
          * Returns the nearest location on the curve to the specified point.
@@ -834,7 +930,7 @@ declare namespace paper {
          * @return the location on the curve that's the closest to
          * the specified point
          */
-        getNearestLocation(point: Point): CurveLocation
+        getNearestLocation(point: PointLike): CurveLocation
 
         /** 
          * Returns the nearest point on the curve to the specified point.
@@ -844,7 +940,7 @@ declare namespace paper {
          * @return the point on the curve that's the closest to the
          * specified point
          */
-        getNearestPoint(point: Point): Point
+        getNearestPoint(point: PointLike): Point
 
         /** 
          * Calculates the point on the curve at the given location.
@@ -1083,7 +1179,7 @@ declare namespace paper {
         /** 
          * Creates a new CurveLocation object.
          */
-        constructor(curve: Curve, time: number, point?: Point)
+        constructor(curve: Curve, time: number, point?: PointLike)
 
         /** 
          * Checks whether tow CurveLocation objects are describing the same location
@@ -1815,12 +1911,12 @@ declare namespace paper {
          * 
          * @param point - the point to check for
          */
-        contains(point: Point): boolean
+        contains(point: PointLike): boolean
 
         /** 
          * @param rect - the rectangle to check against
          */
-        isInside(rect: Rectangle): boolean
+        isInside(rect: RectangleLike): boolean
 
         /** 
          * @param item - the item to check against
@@ -1872,7 +1968,7 @@ declare namespace paper {
          * @return a hit result object describing what exactly was hit
          *     or `null` if nothing was hit
          */
-        hitTest(point: Point, options?: object): HitResult
+        hitTest(point: PointLike, options?: object): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -1890,7 +1986,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: Point, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: object): HitResult[]
 
         /** 
          * Checks whether the item matches the criteria described by the given
@@ -2357,7 +2453,7 @@ declare namespace paper {
          * 
          * @param delta - the offset to translate the item by
          */
-        translate(delta: Point): void
+        translate(delta: PointLike): void
 
         /** 
          * Rotates the item by a given angle around the given center point.
@@ -2368,7 +2464,7 @@ declare namespace paper {
          * 
          * @param angle - the rotation angle
          */
-        rotate(angle: number, center?: Point): void
+        rotate(angle: number, center?: PointLike): void
 
         /** 
          * Scales the item by the given value from its center point, or optionally
@@ -2376,7 +2472,7 @@ declare namespace paper {
          * 
          * @param scale - the scale factor
          */
-        scale(scale: number, center?: Point): void
+        scale(scale: number, center?: PointLike): void
 
         /** 
          * Scales the item by the given values from its center point, or optionally
@@ -2385,7 +2481,7 @@ declare namespace paper {
          * @param hor - the horizontal scale factor
          * @param ver - the vertical scale factor
          */
-        scale(hor: number, ver: number, center?: Point): void
+        scale(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Shears the item by the given value from its center point, or optionally
@@ -2395,7 +2491,7 @@ declare namespace paper {
          * 
          * @param shear - the horizontal and vertical shear factors as a point
          */
-        shear(shear: Point, center?: Point): void
+        shear(shear: PointLike, center?: PointLike): void
 
         /** 
          * Shears the item by the given values from its center point, or optionally
@@ -2406,7 +2502,7 @@ declare namespace paper {
          * @param hor - the horizontal shear factor
          * @param ver - the vertical shear factor
          */
-        shear(hor: number, ver: number, center?: Point): void
+        shear(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Skews the item by the given angles from its center point, or optionally
@@ -2416,7 +2512,7 @@ declare namespace paper {
          * 
          * @param skew - the horizontal and vertical skew angles in degrees
          */
-        skew(skew: Point, center?: Point): void
+        skew(skew: PointLike, center?: PointLike): void
 
         /** 
          * Skews the item by the given angles from its center point, or optionally
@@ -2427,7 +2523,7 @@ declare namespace paper {
          * @param hor - the horizontal skew angle in degrees
          * @param ver - the vertical sskew angle in degrees
          */
-        skew(hor: number, ver: number, center?: Point): void
+        skew(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Transform the item.
@@ -2444,7 +2540,7 @@ declare namespace paper {
          * 
          * @return the transformed point as a new instance
          */
-        globalToLocal(point: Point): Point
+        globalToLocal(point: PointLike): Point
 
         /** 
          * Converts the specified point from the item's own local coordinate space
@@ -2454,7 +2550,7 @@ declare namespace paper {
          * 
          * @return the transformed point as a new instance
          */
-        localToGlobal(point: Point): Point
+        localToGlobal(point: PointLike): Point
 
         /** 
          * Converts the specified point from the parent's coordinate space to
@@ -2464,7 +2560,7 @@ declare namespace paper {
          * 
          * @return the transformed point as a new instance
          */
-        parentToLocal(point: Point): Point
+        parentToLocal(point: PointLike): Point
 
         /** 
          * Converts the specified point from the item's own local coordinate space
@@ -2474,13 +2570,13 @@ declare namespace paper {
          * 
          * @return the transformed point as a new instance
          */
-        localToParent(point: Point): Point
+        localToParent(point: PointLike): Point
 
         /** 
          * Transform the item so that its {@link #bounds} fit within the specified
          * rectangle, without changing its aspect ratio.
          */
-        fitBounds(rectangle: Rectangle, fill?: boolean): void
+        fitBounds(rectangle: RectangleLike, fill?: boolean): void
 
         /** 
          * Attaches an event handler to the item.
@@ -2923,7 +3019,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        translate(point: Point): Matrix
+        translate(point: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a translate transformation.
@@ -2943,7 +3039,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        scale(scale: number, center?: Point): Matrix
+        scale(scale: number, center?: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a scaling transformation.
@@ -2954,7 +3050,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        scale(hor: number, ver: number, center?: Point): Matrix
+        scale(hor: number, ver: number, center?: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a rotation transformation around an
@@ -2965,7 +3061,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        rotate(angle: number, center: Point): Matrix
+        rotate(angle: number, center: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a rotation transformation around an
@@ -2987,7 +3083,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        shear(shear: Point, center?: Point): Matrix
+        shear(shear: PointLike, center?: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a shear transformation.
@@ -2998,7 +3094,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        shear(hor: number, ver: number, center?: Point): Matrix
+        shear(hor: number, ver: number, center?: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a skew transformation.
@@ -3008,7 +3104,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        skew(skew: Point, center?: Point): Matrix
+        skew(skew: PointLike, center?: PointLike): Matrix
 
         /** 
          * Concatenates this matrix with a skew transformation.
@@ -3019,7 +3115,7 @@ declare namespace paper {
          * 
          * @return this affine transform
          */
-        skew(hor: number, ver: number, center?: Point): Matrix
+        skew(hor: number, ver: number, center?: PointLike): Matrix
 
         /** 
          * Appends the specified matrix to this matrix. This is the equivalent of
@@ -3109,7 +3205,7 @@ declare namespace paper {
          * 
          * @return the transformed point
          */
-        transform(point: Point): Point
+        transform(point: PointLike): Point
 
         /** 
          * Transforms an array of coordinates by this matrix and stores the results
@@ -3130,7 +3226,7 @@ declare namespace paper {
          * 
          * @param point - the point to be transformed
          */
-        inverseTransform(point: Point): Point
+        inverseTransform(point: PointLike): Point
 
         /** 
          * Decomposes the affine transformation described by this matrix into
@@ -3261,6 +3357,7 @@ declare namespace paper {
          */
         tools: Tool[]
 
+        AreaText: typeof AreaText
         Color: typeof Color
         CompoundPath: typeof CompoundPath
         Curve: typeof Curve
@@ -3341,7 +3438,7 @@ declare namespace paper {
          * the element, or the size of the canvas to be created for usage in a web
          * worker.
          */
-        setup(element: HTMLCanvasElement | string | Size): void
+        setup(element: HTMLCanvasElement | string | SizeLike): void
 
         /** 
          * Activates this PaperScope, so all newly created items will be placed
@@ -3510,7 +3607,7 @@ declare namespace paper {
          * the same object, e.g. if the segment to be added already belongs to
          * another path.
          */
-        add(...segment: (Segment | Point | number[])[]): Segment | Segment[]
+        add(...segment: (Segment | PointLike | number[])[]): Segment | Segment[]
 
         /** 
          * Inserts one or more segments at a given index in the list of this path's
@@ -3522,7 +3619,7 @@ declare namespace paper {
          * @return the added segment. This is not necessarily the same
          * object, e.g. if the segment to be added already belongs to another path
          */
-        insert(index: number, segment: Segment | Point): Segment
+        insert(index: number, segment: Segment | PointLike): Segment
 
         /** 
          * Adds an array of segments (or types that can be converted to segments)
@@ -3664,7 +3761,7 @@ declare namespace paper {
          * 
          * @return the curve location of the specified point
          */
-        getLocationOf(point: Point): CurveLocation
+        getLocationOf(point: PointLike): CurveLocation
 
         /** 
          * Returns the length of the path from its beginning up to up to the
@@ -3674,7 +3771,7 @@ declare namespace paper {
          * 
          * @return the length of the path up to the specified point
          */
-        getOffsetOf(point: Point): number
+        getOffsetOf(point: PointLike): number
 
         /** 
          * Returns the curve location of the specified offset on the path.
@@ -3760,7 +3857,7 @@ declare namespace paper {
          * @return path offsets where the path is tangential to the
          * provided tangent
          */
-        getOffsetsWithTangent(tangent: Point): number[]
+        getOffsetsWithTangent(tangent: PointLike): number[]
 
     }
     namespace Path {
@@ -3772,7 +3869,7 @@ declare namespace paper {
              * @param from - the line's starting point
              * @param to - the line's ending point
              */
-            constructor(from: Point, to: Point)
+            constructor(from: PointLike, to: PointLike)
 
             /** 
              * Creates a linear path item from the properties described by an object
@@ -3792,7 +3889,7 @@ declare namespace paper {
              * @param center - the center point of the circle
              * @param radius - the radius of the circle
              */
-            constructor(center: Point, radius: number)
+            constructor(center: PointLike, radius: number)
 
             /** 
              * Creates a circular path item from the properties described by an
@@ -3813,7 +3910,7 @@ declare namespace paper {
              * geometry of the rectangular path to be created
              * @param radius - the size of the rounded corners
              */
-            constructor(rectangle: paper.Rectangle, radius?: Size)
+            constructor(rectangle: RectangleLike, radius?: SizeLike)
 
             /** 
              * Creates a rectangular path item from a point and a size object.
@@ -3821,7 +3918,7 @@ declare namespace paper {
              * @param point - the rectangle's top-left corner.
              * @param size - the rectangle's size.
              */
-            constructor(point: Point, size: Size)
+            constructor(point: PointLike, size: SizeLike)
 
             /** 
              * Creates a rectangular path item from the passed points. These do not
@@ -3831,7 +3928,7 @@ declare namespace paper {
              * @param from - the first point defining the rectangle
              * @param to - the second point defining the rectangle
              */
-            constructor(from: Point, to: Point)
+            constructor(from: PointLike, to: PointLike)
 
             /** 
              * Creates a rectangular path item from the properties described by an
@@ -3850,7 +3947,7 @@ declare namespace paper {
              * 
              * @param rectangle - the rectangle circumscribing the ellipse
              */
-            constructor(rectangle: paper.Rectangle)
+            constructor(rectangle: RectangleLike)
 
             /** 
              * Creates an elliptical path item from the properties described by an
@@ -3871,7 +3968,7 @@ declare namespace paper {
              * @param through - the point the arc passes through
              * @param to - the end point of the arc
              */
-            constructor(from: Point, through: Point, to: Point)
+            constructor(from: PointLike, through: PointLike, to: PointLike)
 
             /** 
              * Creates an circular arc path item from the properties described by an
@@ -3892,7 +3989,7 @@ declare namespace paper {
              * @param sides - the number of sides of the polygon
              * @param radius - the radius of the polygon
              */
-            constructor(center: Point, sides: number, radius: number)
+            constructor(center: PointLike, sides: number, radius: number)
 
             /** 
              * Creates a regular polygon shaped path item from the properties
@@ -3916,7 +4013,7 @@ declare namespace paper {
              * @param center - the center point of the star
              * @param points - the number of points of the star
              */
-            constructor(center: Point, points: number, radius1: number, radius2: number)
+            constructor(center: PointLike, points: number, radius1: number, radius2: number)
 
             /** 
              * Creates a star shaped path item from the properties described by an
@@ -4141,7 +4238,7 @@ declare namespace paper {
          * @return the location on the path that's the closest to
          * the specified point
          */
-        getNearestLocation(point: Point): CurveLocation
+        getNearestLocation(point: PointLike): CurveLocation
 
         /** 
          * Returns the nearest point on the path item to the specified point.
@@ -4151,7 +4248,7 @@ declare namespace paper {
          * @return the point on the path that's the closest to the specified
          * point
          */
-        getNearestPoint(point: Point): Point
+        getNearestPoint(point: PointLike): Point
 
         /** 
          * Reverses the orientation of the path item. When called on
@@ -4292,7 +4389,7 @@ declare namespace paper {
          * 
          * @param point - the point in which to start the path
          */
-        moveTo(point: Point): void
+        moveTo(point: PointLike): void
 
         /** 
          * Adds a straight curve to the path, from the the last segment in the path
@@ -4301,7 +4398,7 @@ declare namespace paper {
          * @param point - the destination point of the newly added straight
          *     curve
          */
-        lineTo(point: Point): void
+        lineTo(point: PointLike): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4311,7 +4408,7 @@ declare namespace paper {
          * @param through - the point where the arc should pass through
          * @param to - the point where the arc should end
          */
-        arcTo(through: Point, to: Point): void
+        arcTo(through: PointLike, to: PointLike): void
 
         /** 
          * Adds an arc from the position of the last segment in the path to
@@ -4321,7 +4418,7 @@ declare namespace paper {
          * @param clockwise - specifies whether the arc should be
          *     drawn in clockwise direction
          */
-        arcTo(to: Point, clockwise?: boolean): void
+        arcTo(to: PointLike, clockwise?: boolean): void
 
         /** 
          * Adds a curve from the last segment in the path through the specified
@@ -4333,7 +4430,7 @@ declare namespace paper {
          * @param time - the curve-time parameter at which the
          *     `through` point is to be located
          */
-        curveTo(through: Point, to: Point, time?: number): void
+        curveTo(through: PointLike, to: PointLike, time?: number): void
 
         /** 
          * Adds a cubic bezier curve to the path, from the last segment to the
@@ -4348,7 +4445,7 @@ declare namespace paper {
          *     for {@link Segment#handleIn} of its second segment are calculated
          * @param to - the destination point of the newly added curve
          */
-        cubicCurveTo(handle1: Point, handle2: Point, to: Point): void
+        cubicCurveTo(handle1: PointLike, handle2: PointLike, to: PointLike): void
 
         /** 
          * Adds a quadratic bezier curve to the path, from the last segment to the
@@ -4365,7 +4462,7 @@ declare namespace paper {
          *     calculated
          * @param to - the destination point of the newly added curve
          */
-        quadraticCurveTo(handle: Point, to: Point): void
+        quadraticCurveTo(handle: PointLike, to: PointLike): void
 
         /** 
          * Closes the path. When closed, Paper.js connects the first and last
@@ -4382,7 +4479,7 @@ declare namespace paper {
          * child and a point is added as its first segment relative to the position
          * of the last segment of the current path.
          */
-        moveBy(to: Point): void
+        moveBy(to: PointLike): void
 
         /** 
          * Adds a straight curve to the path, from the the last segment in the path
@@ -4391,7 +4488,7 @@ declare namespace paper {
          * @param point - the vector describing the destination of the newly
          *     added straight curve
          */
-        lineBy(point: Point): void
+        lineBy(point: PointLike): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4402,7 +4499,7 @@ declare namespace paper {
          * @param through - the vector where the arc should pass through
          * @param to - the vector where the arc should end
          */
-        arcBy(through: Point, to: Point): void
+        arcBy(through: PointLike, to: PointLike): void
 
         /** 
          * Adds an arc from the position of the last segment in the path to the `to`
@@ -4413,7 +4510,7 @@ declare namespace paper {
          * @param clockwise - specifies whether the arc should be
          *     drawn in clockwise direction
          */
-        arcBy(to: Point, clockwise?: boolean): void
+        arcBy(to: PointLike, clockwise?: boolean): void
 
         /** 
          * Adds a curve from the last segment in the path through the specified
@@ -4425,7 +4522,7 @@ declare namespace paper {
          * @param time - the curve-time parameter at which the
          *     `through` point is to be located
          */
-        curveBy(through: Point, to: Point, time?: number): void
+        curveBy(through: PointLike, to: PointLike, time?: number): void
 
         /** 
          * Adds a cubic bezier curve to the path, from the last segment to the
@@ -4438,7 +4535,7 @@ declare namespace paper {
          *     added curve
          * @param to - the destination point of the newly added curve
          */
-        cubicCurveBy(handle1: Point, handle2: Point, to: Point): void
+        cubicCurveBy(handle1: PointLike, handle2: PointLike, to: PointLike): void
 
         /** 
          * Adds a quadratic bezier curve to the path, from the last segment to the
@@ -4454,7 +4551,7 @@ declare namespace paper {
          *     second segment are calculated
          * @param to - the destination point of the newly added curve
          */
-        quadraticCurveBy(handle: Point, to: Point): void
+        quadraticCurveBy(handle: PointLike, to: PointLike): void
 
     }
 
@@ -4536,12 +4633,12 @@ declare namespace paper {
          * Creates a Point object using the width and height values of the given
          * Size object.
          */
-        constructor(size: Size)
+        constructor(size: SizeLike)
 
         /** 
          * Creates a Point object using the coordinates of the given Point object.
          */
-        constructor(point: Point)
+        constructor(point: PointLike)
 
         /** 
          * Creates a Point object using the properties in the given object.
@@ -4563,7 +4660,7 @@ declare namespace paper {
          * 
          * @return true if the points are equal
          */
-        equals(point: Point): boolean
+        equals(point: PointLike): boolean
 
         /** 
          * Returns a copy of the point.
@@ -4583,7 +4680,7 @@ declare namespace paper {
          * 
          * @return the angle in degrees
          */
-        getAngle(point: Point): number
+        getAngle(point: PointLike): number
 
         /** 
          * Returns the smaller angle between two vectors in radians. The angle is
@@ -4591,7 +4688,7 @@ declare namespace paper {
          * 
          * @return the angle in radians
          */
-        getAngleInRadians(point: Point): number
+        getAngleInRadians(point: PointLike): number
 
         /** 
          * Returns the angle between two vectors. The angle is directional and
@@ -4602,7 +4699,7 @@ declare namespace paper {
          * 
          * @return the angle between the two vectors
          */
-        getDirectedAngle(point: Point): number
+        getDirectedAngle(point: PointLike): number
 
         /** 
          * Returns the distance between the point and another point.
@@ -4610,7 +4707,7 @@ declare namespace paper {
          * @param squared - Controls whether the distance should
          * remain squared, or its square root should be calculated
          */
-        getDistance(point: Point, squared?: boolean): number
+        getDistance(point: PointLike, squared?: boolean): number
 
         /** 
          * Normalize modifies the {@link #length} of the vector to `1` without
@@ -4637,7 +4734,7 @@ declare namespace paper {
          * 
          * @return the rotated point
          */
-        rotate(angle: number, center: Point): Point
+        rotate(angle: number, center: PointLike): Point
 
         /** 
          * Transforms the point by the matrix as a new point. The object itself is
@@ -4667,7 +4764,7 @@ declare namespace paper {
          * 
          * @return the addition of the two points as a new point
          */
-        add(point: Point): Point
+        add(point: PointLike): Point
 
         /** 
          * Returns the subtraction of the supplied value to both coordinates of
@@ -4689,7 +4786,7 @@ declare namespace paper {
          * 
          * @return the subtraction of the two points as a new point
          */
-        subtract(point: Point): Point
+        subtract(point: PointLike): Point
 
         /** 
          * Returns the multiplication of the supplied value to both coordinates of
@@ -4712,7 +4809,7 @@ declare namespace paper {
          * 
          * @return the multiplication of the two points as a new point
          */
-        multiply(point: Point): Point
+        multiply(point: PointLike): Point
 
         /** 
          * Returns the division of the supplied value to both coordinates of
@@ -4734,7 +4831,7 @@ declare namespace paper {
          * 
          * @return the division of the two points as a new point
          */
-        divide(point: Point): Point
+        divide(point: PointLike): Point
 
         /** 
          * The modulo operator returns the integer remainders of dividing the point
@@ -4752,7 +4849,7 @@ declare namespace paper {
          * @return the integer remainders of dividing the points by each
          * other as a new point
          */
-        modulo(point: Point): Point
+        modulo(point: PointLike): Point
 
         /** 
          * Checks whether the point is inside the boundaries of the rectangle.
@@ -4761,7 +4858,7 @@ declare namespace paper {
          * 
          * @return true if the point is inside the rectangle
          */
-        isInside(rect: Rectangle): boolean
+        isInside(rect: RectangleLike): boolean
 
         /** 
          * Checks if the point is within a given distance of another point.
@@ -4771,7 +4868,7 @@ declare namespace paper {
          * 
          * @return true if it is within the given distance
          */
-        isClose(point: Point, tolerance: number): boolean
+        isClose(point: PointLike, tolerance: number): boolean
 
         /** 
          * Checks if the vector represented by this point is collinear (parallel) to
@@ -4781,7 +4878,7 @@ declare namespace paper {
          * 
          * @return true it is collinear
          */
-        isCollinear(point: Point): boolean
+        isCollinear(point: PointLike): boolean
 
         /** 
          * Checks if the vector represented by this point is orthogonal
@@ -4791,7 +4888,7 @@ declare namespace paper {
          * 
          * @return true it is orthogonal
          */
-        isOrthogonal(point: Point): boolean
+        isOrthogonal(point: PointLike): boolean
 
         /** 
          * Checks if this point has both the x and y coordinate set to 0.
@@ -4826,14 +4923,14 @@ declare namespace paper {
          * 
          * @return the dot product of the two points
          */
-        dot(point: Point): number
+        dot(point: PointLike): number
 
         /** 
          * Returns the cross product of the point and another point.
          * 
          * @return the cross product of the two points
          */
-        cross(point: Point): number
+        cross(point: PointLike): number
 
         /** 
          * Returns the projection of the point onto another point.
@@ -4841,7 +4938,7 @@ declare namespace paper {
          * 
          * @return the projection of the point onto another point
          */
-        project(point: Point): Point
+        project(point: PointLike): Point
 
         /** 
          * Returns a new point with rounded {@link #x} and {@link #y} values. The
@@ -4875,7 +4972,7 @@ declare namespace paper {
          * 
          * @return the newly created point object
          */
-        static min(point1: Point, point2: Point): Point
+        static min(point1: PointLike, point2: PointLike): Point
 
         /** 
          * Returns a new point object with the largest {@link #x} and
@@ -4883,7 +4980,7 @@ declare namespace paper {
          * 
          * @return the newly created point object
          */
-        static max(point1: Point, point2: Point): Point
+        static max(point1: PointLike, point2: PointLike): Point
 
         /** 
          * Returns a point object with random {@link #x} and {@link #y} values
@@ -4912,7 +5009,7 @@ declare namespace paper {
          * 
          * @param point - the position where the text will start
          */
-        constructor(point: Point)
+        constructor(point: PointLike)
 
         /** 
          * Creates a point text item from the properties described by an object
@@ -4995,7 +5092,7 @@ declare namespace paper {
          * to find the element, or the size of the canvas to be created for usage in
          * a web worker.
          */
-        constructor(element: HTMLCanvasElement | string | Size)
+        constructor(element: HTMLCanvasElement | string | SizeLike)
 
         /** 
          * Activates this project, so all newly created items will be placed
@@ -5093,7 +5190,7 @@ declare namespace paper {
          * @return a hit result object that contains more information
          *     about what exactly was hit or `null` if nothing was hit
          */
-        hitTest(point: Point, options?: object): HitResult
+        hitTest(point: PointLike, options?: object): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -5110,7 +5207,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: Point, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: object): HitResult[]
 
         /** 
          * Fetch items contained within the project whose properties match the
@@ -5386,7 +5483,7 @@ declare namespace paper {
          * @param position - the center position at which the raster item is
          *     placed
          */
-        constructor(source?: HTMLImageElement | HTMLCanvasElement | string, position?: Point)
+        constructor(source?: HTMLImageElement | HTMLCanvasElement | string, position?: PointLike)
 
         /** 
          * Creates a new empty raster of the given size, and places it in the
@@ -5396,7 +5493,7 @@ declare namespace paper {
          * @param position - the center position at which the raster item is
          *     placed
          */
-        constructor(size: Size, position?: Point)
+        constructor(size: SizeLike, position?: PointLike)
 
         /** 
          * Creates a new raster from an object description, and places it in the
@@ -5416,7 +5513,7 @@ declare namespace paper {
          * 
          * @return the sub image as a Canvas object
          */
-        getSubCanvas(rect: Rectangle): HTMLCanvasElement
+        getSubCanvas(rect: RectangleLike): HTMLCanvasElement
 
         /** 
          * Extracts a part of the raster item's content as a new raster item, placed
@@ -5427,7 +5524,7 @@ declare namespace paper {
          * 
          * @return the sub raster as a newly created raster item
          */
-        getSubRaster(rect: Rectangle): Raster
+        getSubRaster(rect: RectangleLike): Raster
 
         /** 
          * Returns a Base 64 encoded `data:` URL representation of the raster.
@@ -5440,7 +5537,7 @@ declare namespace paper {
          * @param point - the offset of the image as a point in pixel
          * coordinates
          */
-        drawImage(image: CanvasImageSource, point: Point): void
+        drawImage(image: CanvasImageSource, point: PointLike): void
 
         /** 
          * Calculates the average color of the image within the given path,
@@ -5450,7 +5547,7 @@ declare namespace paper {
          * @return the average color contained in the area covered by the
          * specified path, rectangle or point
          */
-        getAverageColor(object: Path | Rectangle | Point): Color
+        getAverageColor(object: Path | RectangleLike | PointLike): Color
 
         /** 
          * Gets the color of a pixel in the raster.
@@ -5470,7 +5567,7 @@ declare namespace paper {
          * 
          * @return the color of the pixel
          */
-        getPixel(point: Point): Color
+        getPixel(point: PointLike): Color
 
         /** 
          * Sets the color of the specified pixel to the specified color.
@@ -5488,7 +5585,7 @@ declare namespace paper {
          *     coordinates
          * @param color - the color that the pixel will be set to
          */
-        setPixel(point: Point, color: Color): void
+        setPixel(point: PointLike, color: Color): void
 
         /** 
          * Clears the image, if it is backed by a canvas.
@@ -5496,13 +5593,13 @@ declare namespace paper {
         clear(): void
 
         
-        createImageData(size: Size): ImageData
+        createImageData(size: SizeLike): ImageData
 
         
-        getImageData(rect: Rectangle): ImageData
+        getImageData(rect: RectangleLike): ImageData
 
         
-        putImageData(data: ImageData, point: Point): void
+        putImageData(data: ImageData, point: PointLike): void
 
         
         setImageData(data: ImageData): void
@@ -5634,7 +5731,7 @@ declare namespace paper {
          * @param point - the top-left point of the rectangle
          * @param size - the size of the rectangle
          */
-        constructor(point: Point, size: Size)
+        constructor(point: PointLike, size: SizeLike)
 
         /** 
          * Creates a rectangle object.
@@ -5652,12 +5749,12 @@ declare namespace paper {
          * @param from - the first point defining the rectangle
          * @param to - the second point defining the rectangle
          */
-        constructor(from: Point, to: Point)
+        constructor(from: PointLike, to: PointLike)
 
         /** 
          * Creates a new rectangle object from the passed rectangle object.
          */
-        constructor(rectangle: Rectangle)
+        constructor(rectangle: RectangleLike)
 
         /** 
          * Creates a Rectangle object.
@@ -5685,7 +5782,7 @@ declare namespace paper {
          * 
          * @return true if the rectangles are equal
          */
-        equals(rect: Rectangle): boolean
+        equals(rect: RectangleLike): boolean
 
         /** 
          * @return a string representation of this rectangle
@@ -5704,7 +5801,7 @@ declare namespace paper {
          * 
          * @return true if the point is inside the rectangle's boundary
          */
-        contains(point: Point): boolean
+        contains(point: PointLike): boolean
 
         /** 
          * Tests if the interior of the rectangle entirely contains the specified
@@ -5715,7 +5812,7 @@ declare namespace paper {
          * @return true if the rectangle entirely contains the specified
          * rectangle
          */
-        contains(rect: Rectangle): boolean
+        contains(rect: RectangleLike): boolean
 
         /** 
          * Tests if the interior of this rectangle intersects the interior of
@@ -5730,7 +5827,7 @@ declare namespace paper {
          * @return true if the rectangle and the specified rectangle
          *     intersect each other
          */
-        intersects(rect: Rectangle, epsilon?: number): boolean
+        intersects(rect: RectangleLike, epsilon?: number): boolean
 
         /** 
          * Returns a new rectangle representing the intersection of this rectangle
@@ -5742,7 +5839,7 @@ declare namespace paper {
          * @return the largest rectangle contained in both the specified
          * rectangle and in this rectangle
          */
-        intersect(rect: Rectangle): Rectangle
+        intersect(rect: RectangleLike): Rectangle
 
         /** 
          * Returns a new rectangle representing the union of this rectangle with the
@@ -5753,7 +5850,7 @@ declare namespace paper {
          * @return the smallest rectangle containing both the specified
          * rectangle and this rectangle
          */
-        unite(rect: Rectangle): Rectangle
+        unite(rect: RectangleLike): Rectangle
 
         /** 
          * Adds a point to this rectangle. The resulting rectangle is the smallest
@@ -5770,7 +5867,7 @@ declare namespace paper {
          * @return the smallest rectangle that contains both the
          * original rectangle and the specified point
          */
-        include(point: Point): Rectangle
+        include(point: PointLike): Rectangle
 
         /** 
          * Returns a new rectangle expanded by the specified amount in horizontal
@@ -5781,7 +5878,7 @@ declare namespace paper {
          * 
          * @return the expanded rectangle
          */
-        expand(amount: number | Size | Point): Rectangle
+        expand(amount: number | SizeLike | PointLike): Rectangle
 
         /** 
          * Returns a new rectangle expanded by the specified amounts in horizontal
@@ -5895,7 +5992,7 @@ declare namespace paper {
          *     anchor point of the segment that describes the out tangent of the
          *     segment
          */
-        constructor(point?: Point, handleIn?: Point, handleOut?: Point)
+        constructor(point?: PointLike, handleIn?: PointLike, handleOut?: PointLike)
 
         /** 
          * Creates a new Segment object.
@@ -6083,7 +6180,7 @@ declare namespace paper {
              * @param center - the center point of the circle
              * @param radius - the radius of the circle
              */
-            constructor(center: Point, radius: number)
+            constructor(center: PointLike, radius: number)
 
             /** 
              * Creates a circular shape item from the properties described by an
@@ -6104,7 +6201,7 @@ declare namespace paper {
              * geometry of the rectangular shape to be created
              * @param radius - the size of the rounded corners
              */
-            constructor(rectangle: paper.Rectangle, radius?: Size)
+            constructor(rectangle: RectangleLike, radius?: SizeLike)
 
             /** 
              * Creates a rectangular shape item from a point and a size object.
@@ -6112,7 +6209,7 @@ declare namespace paper {
              * @param point - the rectangle's top-left corner.
              * @param size - the rectangle's size.
              */
-            constructor(point: Point, size: Size)
+            constructor(point: PointLike, size: SizeLike)
 
             /** 
              * Creates a rectangular shape item from the passed points. These do not
@@ -6122,7 +6219,7 @@ declare namespace paper {
              * @param from - the first point defining the rectangle
              * @param to - the second point defining the rectangle
              */
-            constructor(from: Point, to: Point)
+            constructor(from: PointLike, to: PointLike)
 
             /** 
              * Creates a rectangular shape item from the properties described by an
@@ -6141,7 +6238,7 @@ declare namespace paper {
              * 
              * @param rectangle - the rectangle circumscribing the ellipse
              */
-            constructor(rectangle: paper.Rectangle)
+            constructor(rectangle: RectangleLike)
 
             /** 
              * Creates an elliptical shape item from the properties described by an
@@ -6188,13 +6285,13 @@ declare namespace paper {
         /** 
          * Creates a Size object using the coordinates of the given Size object.
          */
-        constructor(size: Size)
+        constructor(size: SizeLike)
 
         /** 
          * Creates a Size object using the {@link Point#x} and {@link Point#y}
          * values of the given Point object.
          */
-        constructor(point: Point)
+        constructor(point: PointLike)
 
         /** 
          * Creates a Size object using the properties in the given object.
@@ -6214,7 +6311,7 @@ declare namespace paper {
          * 
          * @param size - the size to compare to
          */
-        equals(size: Size): boolean
+        equals(size: SizeLike): boolean
 
         /** 
          * Returns a copy of the size.
@@ -6244,7 +6341,7 @@ declare namespace paper {
          * 
          * @return the addition of the two sizes as a new size
          */
-        add(size: Size): Size
+        add(size: SizeLike): Size
 
         /** 
          * Returns the subtraction of the supplied value from the width and height
@@ -6265,7 +6362,7 @@ declare namespace paper {
          * 
          * @return the subtraction of the two sizes as a new size
          */
-        subtract(size: Size): Size
+        subtract(size: SizeLike): Size
 
         /** 
          * Returns the multiplication of the supplied value with the width and
@@ -6285,7 +6382,7 @@ declare namespace paper {
          * 
          * @return the multiplication of the two sizes as a new size
          */
-        multiply(size: Size): Size
+        multiply(size: SizeLike): Size
 
         /** 
          * Returns the division of the supplied value by the width and height of the
@@ -6305,7 +6402,7 @@ declare namespace paper {
          * 
          * @return the division of the two sizes as a new size
          */
-        divide(size: Size): Size
+        divide(size: SizeLike): Size
 
         /** 
          * The modulo operator returns the integer remainders of dividing the size
@@ -6323,7 +6420,7 @@ declare namespace paper {
          * @return the integer remainders of dividing the sizes by each
          * other as a new size
          */
-        modulo(size: Size): Size
+        modulo(size: SizeLike): Size
 
         /** 
          * Checks if this size has both the width and height set to 0.
@@ -6372,7 +6469,7 @@ declare namespace paper {
          * 
          * @return the newly created size object
          */
-        static min(size1: Size, size2: Size): Size
+        static min(size1: SizeLike, size2: SizeLike): Size
 
         /** 
          * Returns a new size object with the largest {@link #width} and
@@ -6380,7 +6477,7 @@ declare namespace paper {
          * 
          * @return the newly created size object
          */
-        static max(size1: Size, size2: Size): Size
+        static max(size1: SizeLike, size2: SizeLike): Size
 
         /** 
          * Returns a size object with random {@link #width} and {@link #height}
@@ -6558,7 +6655,7 @@ declare namespace paper {
          * 
          * @param position - the position of the placed symbol
          */
-        place(position?: Point): SymbolItem
+        place(position?: PointLike): SymbolItem
 
         /** 
          * Returns a copy of the symbol.
@@ -6592,7 +6689,7 @@ declare namespace paper {
          *     item to place as a symbol
          * @param point - the center point of the placed symbol
          */
-        constructor(definition: SymbolDefinition | Item, point?: Point)
+        constructor(definition: SymbolDefinition | Item, point?: PointLike)
 
     }
 
@@ -7174,7 +7271,7 @@ declare namespace paper {
          * 
          * @param delta - the offset to translate the view by
          */
-        translate(delta: Point): void
+        translate(delta: PointLike): void
 
         /** 
          * Rotates the view by a given angle around the given center point.
@@ -7185,7 +7282,7 @@ declare namespace paper {
          * 
          * @param angle - the rotation angle
          */
-        rotate(angle: number, center?: Point): void
+        rotate(angle: number, center?: PointLike): void
 
         /** 
          * Scales the view by the given value from its center point, or optionally
@@ -7193,7 +7290,7 @@ declare namespace paper {
          * 
          * @param scale - the scale factor
          */
-        scale(scale: number, center?: Point): void
+        scale(scale: number, center?: PointLike): void
 
         /** 
          * Scales the view by the given values from its center point, or optionally
@@ -7202,7 +7299,7 @@ declare namespace paper {
          * @param hor - the horizontal scale factor
          * @param ver - the vertical scale factor
          */
-        scale(hor: number, ver: number, center?: Point): void
+        scale(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Shears the view by the given value from its center point, or optionally
@@ -7212,7 +7309,7 @@ declare namespace paper {
          * 
          * @param shear - the horizontal and vertical shear factors as a point
          */
-        shear(shear: Point, center?: Point): void
+        shear(shear: PointLike, center?: PointLike): void
 
         /** 
          * Shears the view by the given values from its center point, or optionally
@@ -7223,7 +7320,7 @@ declare namespace paper {
          * @param hor - the horizontal shear factor
          * @param ver - the vertical shear factor
          */
-        shear(hor: number, ver: number, center?: Point): void
+        shear(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Skews the view by the given angles from its center point, or optionally
@@ -7233,7 +7330,7 @@ declare namespace paper {
          * 
          * @param skew - the horizontal and vertical skew angles in degrees
          */
-        skew(skew: Point, center?: Point): void
+        skew(skew: PointLike, center?: PointLike): void
 
         /** 
          * Skews the view by the given angles from its center point, or optionally
@@ -7244,7 +7341,7 @@ declare namespace paper {
          * @param hor - the horizontal skew angle in degrees
          * @param ver - the vertical sskew angle in degrees
          */
-        skew(hor: number, ver: number, center?: Point): void
+        skew(hor: number, ver: number, center?: PointLike): void
 
         /** 
          * Transform the view.
@@ -7262,7 +7359,7 @@ declare namespace paper {
          * 
          * @return the point converted into view coordinates
          */
-        projectToView(point: Point): Point
+        projectToView(point: PointLike): Point
 
         /** 
          * Converts the passed point from view coordinate space to project
@@ -7272,7 +7369,7 @@ declare namespace paper {
          * 
          * @return the point converted into project coordinates
          */
-        viewToProject(point: Point): Point
+        viewToProject(point: PointLike): Point
 
         /** 
          * Determines and returns the event location in project coordinate space.
