@@ -74,13 +74,13 @@ declare namespace paper {
 }
 
 
-declare module 'paper/dist/paper-core'
+declare module '@oss/paper/dist/paper-core'
 {
     const paperCore: Pick<paper.PaperScope, Exclude<keyof paper.PaperScope, 'PaperScript'>>;
     export = paperCore
 }
 
-declare module 'paper'
+declare module '@oss/paper'
 {
     const paperFull: paper.PaperScope;
     export = paperFull
