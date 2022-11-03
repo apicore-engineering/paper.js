@@ -10,7 +10,7 @@
  * - dedicated testing library like: https://github.com/Microsoft/dtslint
  */
 
-import * as paper from 'paper';
+import * as paper from '@oss/paper';
 
 
 //
@@ -44,6 +44,7 @@ let gradient         = {} as paper.Gradient;
 let gradientStop     = {} as paper.GradientStop;
 let textItem         = {} as paper.TextItem;
 let pointText        = {} as paper.PointText;
+let areaText         = {} as paper.AreaText;
 let view             = {} as paper.View;
 let event            = {} as paper.Event;
 let mouseEvent       = {} as paper.MouseEvent;
@@ -986,6 +987,19 @@ textItem.justification;
 new paper.PointText(pointLike);
 new paper.PointText(object);
 pointText.point;
+
+
+// AreaText
+new paper.AreaText(rectangle);
+new paper.AreaText(object);
+areaText.editMode;
+areaText.rectangle;
+areaText.justification;
+areaText.htmlId;
+areaText.boundsGenerator;
+areaText.editElement;
+areaText.setWidth(20);
+areaText.setHeight(20);
 
 
 //
