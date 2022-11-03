@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.16-3-paper-d-ts-file-generation-in-the-install-pipeline - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.16 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 3 00:01:16 2022 +0100
+ * Date: Thu Nov 3 12:26:38 2022 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -7456,13 +7456,13 @@ declare namespace paper {
 }
 
 
-declare module 'paper/dist/paper-core'
+declare module '@oss/paper/dist/paper-core'
 {
     const paperCore: Pick<paper.PaperScope, Exclude<keyof paper.PaperScope, 'PaperScript'>>;
     export = paperCore
 }
 
-declare module 'paper'
+declare module '@oss/paper'
 {
     const paperFull: paper.PaperScope;
     export = paperFull
