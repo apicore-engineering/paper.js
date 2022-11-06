@@ -248,8 +248,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _divStylesFixed: function (div) {
+        var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         div.style.fontFamily = this._style.fontFamily;
-        div.style.fontSize = this._style.fontSize + 'px';
+        div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this._style.fontWeight;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
