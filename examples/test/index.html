@@ -31,12 +31,15 @@
     // pointText.selected = true;
 
     areaText.selected = true;
-    areaText.boundsGenerator = 'auto-height';
+    areaText.boundsGenerator = 'fixed';
 
     const areaText1 = new paper.AreaText(new paper.Rectangle(new paper.Point(100, 100), size));
     areaText1.fillColor = 'black';
     areaText1.content = 'Some new text here';
     areaText1.selected = true;
+
+    project.view.scale(2);
+    // project.view.translate([10, -30])
 </script>
 </body>
 </html>
