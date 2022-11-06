@@ -105,7 +105,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setBoundsGenerator: function (generator) {
-      if (this._boundsGenerators.indexOf(generator) === 0) {
+      if (this._boundsGenerators.indexOf(generator) === -1) {
           throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
       }
 
@@ -202,8 +202,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.position = 'absolute';
         container.style.width = this.rectangle.width + 'px';
         container.style.height = '100%';
-        container.style.left = canvasBoundingBox.left + this.rectangle.left + 'px';
-        container.style.top = canvasBoundingBox.top + this.rectangle.top + 0.5  + 'px';
+        container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
+        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 0.5  + 'px';
         container.style.maxHeight = this.view.getViewSize().height + 'px';
     },
 
@@ -218,10 +218,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _elementStylesFixed: function (element) {
+        var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.fontFamily = this._style.fontFamily;
-        element.style.fontSize = this._style.fontSize + 'px';
+        element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
-        element.style.lineHeight = '' + this._style.leading / this.style.fontSize;
+        element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
         element.style.width = '100%';
         element.style.resize = 'none';
         element.style.border = 'none';
