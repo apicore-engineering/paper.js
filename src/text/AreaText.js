@@ -163,14 +163,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setHeight: function () {
-        var point = this.rectangle.getPoint();
+        var point = this.bounds.point;
         var size = new Size(this.rectangle.width, arguments[0]);
         var rectangle = new Rectangle(point, size);
         this.setRectangle(rectangle, false);
     },
 
     setWidth: function () {
-        var point = this.rectangle.getPoint();
+        var point = this.bounds.point;
         var size = new Size(arguments[0], this.rectangle.height);
         var rectangle = new Rectangle(point, size);
         this.setRectangle(rectangle, false);
@@ -228,6 +228,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
         element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
+        element.style.transformOrigin = 'top left';
+        element.style.transform = 'rotate(' + this.rotation + 'deg)';
         element.style.width = '100%';
         element.style.resize = 'none';
         element.style.border = 'none';
