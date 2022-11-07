@@ -37,8 +37,11 @@
     areaText1.fillColor = 'black';
     areaText1.content = 'Some new text here';
     areaText1.selected = true;
+    areaText1.addEditModeListener(function (e) {
+        console.log(e.target.value, 'edit mode changed')
+    });
 
-    project.view.scale(2);
+    project.view.scale(3);
     // project.view.translate([10, -30])
 </script>
 </body>

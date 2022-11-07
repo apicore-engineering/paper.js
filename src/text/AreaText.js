@@ -28,6 +28,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _htmlId: 'area-text',
     _outsideClickId: null,
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
+    _editModeListener: function () {},
 
     /**
      * Creates an area text item
@@ -55,6 +56,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this.setRectangle(arguments[0] || new Rectangle(0, 0));
         this._htmlElement = 'textarea';
         this._onDoubleClick();
+    },
+
+    addEditModeListener: function (editModeListener) {
+      this._editModeListener = editModeListener;
     },
 
     /**
@@ -158,14 +163,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setHeight: function () {
-        var point = this.rectangle.getPoint();
+        var point = this.bounds.point;
         var size = new Size(this.rectangle.width, arguments[0]);
         var rectangle = new Rectangle(point, size);
         this.setRectangle(rectangle, false);
     },
 
     setWidth: function () {
-        var point = this.rectangle.getPoint();
+        var point = this.bounds.point;
         var size = new Size(arguments[0], this.rectangle.height);
         var rectangle = new Rectangle(point, size);
         this.setRectangle(rectangle, false);
@@ -200,7 +205,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _containerStylesFixed: function (container) {
         var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
         container.style.position = 'absolute';
-        container.style.width = this.rectangle.width + 'px';
+        container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = '100%';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
         container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 0.5  + 'px';
@@ -214,7 +219,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _containerStylesAutoWidth: function (container) {
         this._containerStylesFixed(container);
         container.style.width = '100%';
-        container.style.height = this.leading + 'px';
+        container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesFixed: function (element) {
@@ -223,6 +228,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
         element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
+        element.style.transformOrigin = 'top left';
+        element.style.transform = 'rotate(' + this.rotation + 'deg)';
         element.style.width = '100%';
         element.style.resize = 'none';
         element.style.border = 'none';
@@ -238,7 +245,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesAutoHeight: function (element) {
         this._elementStylesFixed(element);
-        element.style.height = this.rectangle.height + 'px';
+        element.style.height = this.rectangle.height * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesAutoWidth: function (element) {
@@ -248,12 +255,13 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _divStylesFixed: function (div) {
+        var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         div.style.fontFamily = this._style.fontFamily;
-        div.style.fontSize = this._style.fontSize + 'px';
+        div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this._style.fontWeight;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
-        div.style.width = this.rectangle.width + 'px';
+        div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         div.style.wordWrap = 'break-word';
     },
 
@@ -296,7 +304,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 heightSetter = div.scrollHeight;
             }
             element.style.height = heightSetter + 'px';
-            self.setHeight(heightSetter);
+            self.setHeight(heightSetter / self.viewMatrix.scaling.y);
         }
 
 
@@ -340,6 +348,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
         }
+        element.addEventListener('input', this._editModeListener);
     },
 
     _setEditMode: function () {
@@ -536,6 +545,16 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @name AreaText#setWidth
      * @function
      * @param {Number} width the number to set the width
+     */
+
+    /**
+     * {@grouptitle EventListeners}
+     *
+     * Changes callback function which will fire inside event listener for the input field
+     *
+     * @name AreaText#addEditModeListener
+     * @function
+     * @param {Function} addEditModeListener the callback function
      */
 
     /**
