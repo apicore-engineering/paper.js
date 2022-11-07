@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 3 12:26:38 2022 +0100
+ * Date: Mon Nov 7 00:41:27 2022 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -102,6 +102,13 @@ declare namespace paper {
          * @param width - the number to set the width
          */
         setWidth(width: number): void
+
+        /** 
+         * Changes callback function which will fire inside event listener for the input field
+         * 
+         * @param addEditModeListener - the callback function
+         */
+        addEditModeListener(addEditModeListener: Function): void
 
         /** 
          * The height of the rectangle is wrapped around

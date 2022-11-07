@@ -28,6 +28,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _htmlId: 'area-text',
     _outsideClickId: null,
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
+    _editModeListener: function () {},
 
     /**
      * Creates an area text item
@@ -55,6 +56,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this.setRectangle(arguments[0] || new Rectangle(0, 0));
         this._htmlElement = 'textarea';
         this._onDoubleClick();
+    },
+
+    addEditModeListener: function (editModeListener) {
+      this._editModeListener = editModeListener;
     },
 
     /**
@@ -341,6 +346,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
         }
+        element.addEventListener('input', this._editModeListener);
     },
 
     _setEditMode: function () {
@@ -537,6 +543,16 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @name AreaText#setWidth
      * @function
      * @param {Number} width the number to set the width
+     */
+
+    /**
+     * {@grouptitle EventListeners}
+     *
+     * Changes callback function which will fire inside event listener for the input field
+     *
+     * @name AreaText#addEditModeListener
+     * @function
+     * @param {Function} addEditModeListener the callback function
      */
 
     /**
