@@ -205,7 +205,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _containerStylesFixed: function (container) {
         var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
         container.style.position = 'absolute';
-        container.style.width = this.rectangle.width + 'px';
+        container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = '100%';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
         container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 0.5  + 'px';
@@ -219,7 +219,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _containerStylesAutoWidth: function (container) {
         this._containerStylesFixed(container);
         container.style.width = '100%';
-        container.style.height = this.leading + 'px';
+        container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesFixed: function (element) {
@@ -243,7 +243,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesAutoHeight: function (element) {
         this._elementStylesFixed(element);
-        element.style.height = this.rectangle.height + 'px';
+        element.style.height = this.rectangle.height * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesAutoWidth: function (element) {
@@ -259,7 +259,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.fontWeight = this._style.fontWeight;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
-        div.style.width = this.rectangle.width + 'px';
+        div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         div.style.wordWrap = 'break-word';
     },
 
@@ -302,7 +302,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 heightSetter = div.scrollHeight;
             }
             element.style.height = heightSetter + 'px';
-            self.setHeight(heightSetter);
+            self.setHeight(heightSetter / self.viewMatrix.scaling.y);
         }
 
 
