@@ -998,8 +998,6 @@ areaText.justification;
 areaText.htmlId;
 areaText.boundsGenerator;
 areaText.editElement;
-areaText.setWidth(20);
-areaText.setHeight(20);
 
 
 //

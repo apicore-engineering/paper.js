@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Nov 7 00:41:27 2022 +0100
+ * Date: Mon Nov 7 21:58:21 2022 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -97,25 +97,11 @@ declare namespace paper {
         constructor(object: object)
 
         /** 
-         * The width of the rectangle is wrapped around
-         * 
-         * @param width - the number to set the width
-         */
-        setWidth(width: number): void
-
-        /** 
          * Changes callback function which will fire inside event listener for the input field
          * 
          * @param addEditModeListener - the callback function
          */
         addEditModeListener(addEditModeListener: Function): void
-
-        /** 
-         * The height of the rectangle is wrapped around
-         * 
-         * @param height - the number to set the height
-         */
-        setHeight(height: number): void
 
     }
 
