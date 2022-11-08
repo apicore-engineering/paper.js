@@ -15,6 +15,11 @@
  */
 
 declare namespace paper {
+    type BoundsGenerator = 'auto-height' | 'auto-width' | 'fixed'
+    type EventCallback = (e: KeyboardEvent) => void
+    type BooleanCallback = (b: boolean) => void
+    type AnyCallback = (a: any) => void
+
 
     type PointLike = (
         Point

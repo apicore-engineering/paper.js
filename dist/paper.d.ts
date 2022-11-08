@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.16 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.16-6-add-proper-event-listeners-to-the-editmode-change-and-editmode-content-change - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,12 +9,17 @@
  *
  * All rights reserved.
  *
- * Date: Mon Nov 7 00:41:27 2022 +0100
+ * Date: Mon Nov 7 22:01:53 2022 +0100
  *
  * This is an auto-generated type definition.
  */
 
 declare namespace paper {
+    type BoundsGenerator = 'auto-height' | 'auto-width' | 'fixed'
+    type EventCallback = (e: KeyboardEvent) => void
+    type BooleanCallback = (b: boolean) => void
+    type AnyCallback = (a: any) => void
+
 
     type PointLike = (
         Point
@@ -72,7 +77,7 @@ declare namespace paper {
          * If 'auto-width' then draw on one line. If 'auto-height' then adjust the height
          * Bounds generator
          */
-        boundsGenerator: string
+        boundsGenerator: BoundsGenerator
 
         /** 
          * HTML element name
@@ -104,11 +109,20 @@ declare namespace paper {
         setWidth(width: number): void
 
         /** 
-         * Changes callback function which will fire inside event listener for the input field
+         * Adds a new event listener to the edit mode text change
+         * Returns callback which will remove the listener from the listeners
          * 
-         * @param addEditModeListener - the callback function
+         * @param listener - the callback function
          */
-        addEditModeListener(addEditModeListener: Function): void
+        addEditModeListener(listener: EventCallback): AnyCallback
+
+        /** 
+         * Adds a new event listener to the edit mode change
+         * Returns callback which will remove the listener from the listeners
+         * 
+         * @param listener - the callback function
+         */
+        addModeChangeListener(listener: BooleanCallback): AnyCallback
 
         /** 
          * The height of the rectangle is wrapped around

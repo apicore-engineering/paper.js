@@ -122,7 +122,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     /**
      * Get bounds generator which defines the type of the AreaText behavior
-     * @return {string}
+     * @return {BoundsGenerator}
      */
     getBoundsGenerator: function () {
         return this._boundsGenerator;
@@ -578,11 +578,25 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     /**
      * {@grouptitle EventListeners}
      *
-     * Changes callback function which will fire inside event listener for the input field
+     * Adds a new event listener to the edit mode text change
+     * Returns callback which will remove the listener from the listeners
      *
      * @name AreaText#addEditModeListener
      * @function
-     * @param {Function} addEditModeListener the callback function
+     * @return {AnyCallback}
+     * @param {EventCallback} listener the callback function
+     */
+
+    /**
+     * {@grouptitle EventListeners}
+     *
+     * Adds a new event listener to the edit mode change
+     * Returns callback which will remove the listener from the listeners
+     *
+     * @name AreaText#addModeChangeListener
+     * @function
+     * @return {AnyCallback}
+     * @param {BooleanCallback} listener the callback function
      */
 
     /**
@@ -636,7 +650,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * Bounds generator
      *
      * @name AreaText#boundsGenerator
-     * @type String
+     * @type BoundsGenerator
      * @default 'fixed'
      */
 
