@@ -213,15 +213,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _changeMode: function (mode) {
+        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+            this._editModeChangeListeners[i].listener(mode);
+        }
+        
         this._editMode = mode || !this.editMode;
         if (this._editMode) {
             this._setEditMode();
         } else {
             this._setNormalMode();
-        }
-
-        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
-            this._editModeChangeListeners[i].listener(mode);
         }
     },
 
