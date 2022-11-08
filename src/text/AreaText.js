@@ -28,7 +28,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _htmlId: 'area-text',
     _outsideClickId: null,
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
-    _editModeListener: function () {},
+    _editModeListeners: [],
+    _editModeChangeListeners: [],
 
     /**
      * Creates an area text item
@@ -58,8 +59,26 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._onDoubleClick();
     },
 
-    addEditModeListener: function (editModeListener) {
-      this._editModeListener = editModeListener;
+    _addListener: function (listener, name) {
+        if (typeof listener !== 'function') {
+            throw new Error('Argument is not a function');
+        }
+        var id = UID.get();
+        var self = this;
+        this[name].push({ id: id, listener: listener });
+        return function () {
+            self[name] = self[name].filter(function (listener) {
+                return listener.id !== id;
+            });
+        };
+    },
+
+    addEditModeListener: function (listener) {
+      return this._addListener(listener, '_editModeListeners');
+    },
+
+    addModeChangeListener: function (listener) {
+        return this._addListener(listener, '_editModeChangeListeners');
     },
 
     /**
@@ -199,6 +218,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._setEditMode();
         } else {
             this._setNormalMode();
+        }
+
+        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+            this._editModeChangeListeners[i].listener(mode);
         }
     },
 
@@ -348,7 +371,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
         }
-        element.addEventListener('input', this._editModeListener);
+        var self = this;
+        element.addEventListener('input', function (e) {
+            for (var i = 0; i < self._editModeListeners.length; i++) {
+                self._editModeListeners[i].listener(e);
+            }
+        });
     },
 
     _setEditMode: function () {
