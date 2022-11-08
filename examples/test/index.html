@@ -37,11 +37,21 @@
     areaText1.fillColor = 'black';
     areaText1.content = 'Some new text here';
     areaText1.selected = true;
-    areaText1.addEditModeListener(function (e) {
+    const removeModeChanged = areaText1.addEditModeListener(function (e) {
         console.log(e.target.value, 'edit mode changed')
+    });
+    //
+    areaText1.addEditModeListener(function (e) {
+        console.log(e.target.value, 'edit mode changed2')
+    });
+
+    const modeChanged = areaText1.addModeChangeListener(function (changed) {
+       console.log('mode changed')
     });
 
     project.view.scale(3);
+    removeModeChanged();
+    modeChanged();
     // project.view.translate([10, -30])
 </script>
 </body>
