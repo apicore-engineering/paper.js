@@ -28,7 +28,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _htmlId: 'area-text',
     _outsideClickId: null,
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
-    _editModeListener: function () {},
+    _editModeListeners: [],
+    _editModeChangeListeners: [],
 
     /**
      * Creates an area text item
@@ -58,8 +59,26 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._onDoubleClick();
     },
 
-    addEditModeListener: function (editModeListener) {
-      this._editModeListener = editModeListener;
+    _addListener: function (listener, name) {
+        if (typeof listener !== 'function') {
+            throw new Error('Argument is not a function');
+        }
+        var id = UID.get();
+        var self = this;
+        this[name].push({ id: id, listener: listener });
+        return function () {
+            self[name] = self[name].filter(function (listener) {
+                return listener.id !== id;
+            });
+        };
+    },
+
+    addEditModeListener: function (listener) {
+      return this._addListener(listener, '_editModeListeners');
+    },
+
+    addModeChangeListener: function (listener) {
+        return this._addListener(listener, '_editModeChangeListeners');
     },
 
     /**
@@ -103,7 +122,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     /**
      * Get bounds generator which defines the type of the AreaText behavior
-     * @return {string}
+     * @return {BoundsGenerator}
      */
     getBoundsGenerator: function () {
         return this._boundsGenerator;
@@ -118,6 +137,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
       if (generator === 'auto-width') {
           this._htmlElement = 'input';
       }
+      this._changed(/*#=*/Change.GEOMETRY);
+      this._wrap(this.view.context);
     },
 
     /**
@@ -162,18 +183,16 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._updateAnchor();
     },
 
-    setHeight: function () {
-        var point = this.bounds.point;
-        var size = new Size(this.rectangle.width, arguments[0]);
-        var rectangle = new Rectangle(point, size);
-        this.setRectangle(rectangle, false);
+    _setHeight: function () {
+        this._rectangle.height = arguments[0];
+        this._updateAnchor();
+        this._changed(/*#=*/Change.GEOMETRY);
     },
 
-    setWidth: function () {
-        var point = this.bounds.point;
-        var size = new Size(arguments[0], this.rectangle.height);
-        var rectangle = new Rectangle(point, size);
-        this.setRectangle(rectangle, false);
+    _setWidth: function () {
+        this._rectangle.width = arguments[0];
+        this._updateAnchor();
+        this._changed(/*#=*/Change.GEOMETRY);
     },
 
     /**
@@ -199,6 +218,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._setEditMode();
         } else {
             this._setNormalMode();
+        }
+
+        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+            this._editModeChangeListeners[i].listener(mode);
         }
     },
 
@@ -304,7 +327,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 heightSetter = div.scrollHeight;
             }
             element.style.height = heightSetter + 'px';
-            self.setHeight(heightSetter / self.viewMatrix.scaling.y);
+            self._setHeight(heightSetter / self.viewMatrix.scaling.y);
         }
 
 
@@ -317,7 +340,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
             div.innerHTML = element.value.replace(/\s/g, '!');
-            self.setWidth(div.scrollWidth);
+            self._setWidth(div.scrollWidth);
         }
 
         // initial setup
@@ -348,7 +371,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
         }
-        element.addEventListener('input', this._editModeListener);
+        var self = this;
+        element.addEventListener('input', function (e) {
+            for (var i = 0; i < self._editModeListeners.length; i++) {
+                self._editModeListeners[i].listener(e);
+            }
+        });
     },
 
     _setEditMode: function () {
@@ -404,8 +432,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         if (this._boundsGenerator === 'auto-width') {
             this._lines = [this.content];
             var width = ctx.measureText(this._lines[0]).width;
-            this.setWidth(width);
-            this.setHeight(this.getStyle().leading);
+            this._setWidth(width);
+            this._setHeight(this.getStyle().leading);
             return;
         }
 
@@ -446,7 +474,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         if (this._boundsGenerator === 'auto-height') {
             var height = (this.getStyle().leading) * (this._lines.length );
-            this.setHeight(height);
+            this._setHeight(height);
         }
     },
 
@@ -536,35 +564,28 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @default 'new paper.Rectangle(0, 0)'
      */
 
-
     /**
-     * {@grouptitle Rectangle}
+     * {@grouptitle EventListeners}
      *
-     * The width of the rectangle is wrapped around
+     * Adds a new event listener to the edit mode text change
+     * Returns callback which will remove the listener from the listeners
      *
-     * @name AreaText#setWidth
+     * @name AreaText#addEditModeListener
      * @function
-     * @param {Number} width the number to set the width
+     * @return {AnyCallback}
+     * @param {EventCallback} listener the callback function
      */
 
     /**
      * {@grouptitle EventListeners}
      *
-     * Changes callback function which will fire inside event listener for the input field
+     * Adds a new event listener to the edit mode change
+     * Returns callback which will remove the listener from the listeners
      *
-     * @name AreaText#addEditModeListener
+     * @name AreaText#addModeChangeListener
      * @function
-     * @param {Function} addEditModeListener the callback function
-     */
-
-    /**
-     * {@grouptitle Rectangle}
-     *
-     * The height of the rectangle is wrapped around
-     *
-     * @name AreaText#setHeight
-     * @function
-     * @param {Number} height the number to set the height
+     * @return {AnyCallback}
+     * @param {BooleanCallback} listener the callback function
      */
 
     /**
@@ -608,7 +629,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * Bounds generator
      *
      * @name AreaText#boundsGenerator
-     * @type String
+     * @type BoundsGenerator
      * @default 'fixed'
      */
 

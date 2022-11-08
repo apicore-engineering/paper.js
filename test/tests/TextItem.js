@@ -44,16 +44,6 @@ test('AreaText(rectangle)', function () {
     equals(function () {
         return Base.equals(new Rectangle(new Point(50, 50), size), text.rectangle);
     }, true, 'Rectangles should equal');
-
-    text.setWidth(900);
-    equals(function () {
-        return text.rectangle.width;
-    }, 900, 'Widths should equal');
-
-    text.setHeight(200);
-    equals(function () {
-        return text.rectangle.height;
-    }, 200, 'Heights should equal');
 });
 
 test('AreaText(editMode)', function () {
