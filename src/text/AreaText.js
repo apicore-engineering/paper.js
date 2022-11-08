@@ -273,6 +273,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesAutoWidth: function (element) {
         this._elementStylesFixed(element);
+        element.setAttribute('autocomplete', 'off');
         element.style.position = 'absolute';
         element.style.top = '0.5px';
     },
@@ -322,7 +323,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             }
             var heightSetter;
             if (lastBr) {
-                heightSetter = div.scrollHeight + self.leading;
+                heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
             } else {
                 heightSetter = div.scrollHeight;
             }
@@ -340,7 +341,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
             div.innerHTML = element.value.replace(/\s/g, '!');
-            self._setWidth(div.scrollWidth);
+            self._setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 
         // initial setup
