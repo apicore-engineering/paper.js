@@ -137,6 +137,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
       if (generator === 'auto-width') {
           this._htmlElement = 'input';
       }
+      this._changed(/*#=*/Change.GEOMETRY);
+      this._wrap(this.view.context);
     },
 
     /**
