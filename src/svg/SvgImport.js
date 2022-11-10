@@ -303,9 +303,23 @@ new function() {
             // TODO: Support for these is missing in Paper.js right now
             // rotate: character rotation
             // lengthAdjust:
-            var text = new PointText(getPoint(node).add(
+            var text;
+            if (getValue(node, 'type', true) === 'text-area') {
+                var point = getPoint(node).add(
+                    getPoint(node, 'dx', 'dy'));
+                var size = getSize(node);
+                text = new AreaText(new Rectangle(point, size));
+                var content = '';
+                var nodeElements = Array.prototype.slice.call( text.getElementsByTagName('tspan') );
+                for (var i = 0; i < nodeElements.length; i++) {
+                    content += nodeElements[i].textContent.trim() + '\n';
+                }
+                text.setContent(content);
+            } else {
+                text = new PointText(getPoint(node).add(
                     getPoint(node, 'dx', 'dy')));
-            text.setContent(node.textContent.trim() || '');
+                text.setContent(node.textContent.trim() || '');
+            }
             return text;
         },
 
