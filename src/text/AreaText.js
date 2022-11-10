@@ -31,6 +31,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _editModeListeners: [],
     _editModeChangeListeners: [],
 
+    _serializeFields: {
+        justification: null,
+        boundsGenerator: null,
+        lines: [],
+    },
+
     /**
      * Creates an area text item
      *
