@@ -305,16 +305,19 @@ new function() {
             // lengthAdjust:
             var text;
             if (getValue(node, 'type', true) === 'text-area') {
-                var point = getPoint(node).add(
-                    getPoint(node, 'dx', 'dy'));
+                var point = getPoint(node);
                 var size = getSize(node);
                 text = new AreaText(new Rectangle(point, size));
                 var content = '';
-                var nodeElements = Array.prototype.slice.call( text.getElementsByTagName('tspan') );
+                var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
                 for (var i = 0; i < nodeElements.length; i++) {
                     content += nodeElements[i].textContent.trim() + '\n';
                 }
-                text.setContent(content);
+                text.setContent(node.textContent.trim() || '');
+                var generator = getAttribute(node, 'generator');
+                if (generator) {
+                    text.setBoundsGenerator(generator);
+                }
             } else {
                 text = new PointText(getPoint(node).add(
                     getPoint(node, 'dx', 'dy')));
