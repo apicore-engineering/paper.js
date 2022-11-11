@@ -31,6 +31,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _editModeListeners: [],
     _editModeChangeListeners: [],
 
+    _serializeFields: {
+        justification: null,
+        boundsGenerator: null,
+        lines: [],
+    },
+
     /**
      * Creates an area text item
      *
@@ -54,7 +60,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._editMode = false;
         this._boundsGenerator = 'fixed';
         TextItem.apply(this, arguments);
-        this.setRectangle(arguments[0] || new Rectangle(0, 0));
+        if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
+            this.setRectangle(arguments[0] || new Rectangle(0, 0));
+        }
+        this._lines = arguments[0].lines || [];
         this._htmlElement = 'textarea';
         this._onDoubleClick();
     },
@@ -79,6 +88,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     addModeChangeListener: function (listener) {
         return this._addListener(listener, '_editModeChangeListeners');
+    },
+
+    getLines: function () {
+        return this._lines;
     },
 
     /**
@@ -135,11 +148,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
       this._boundsGenerator = generator;
       if (generator === 'auto-width') {
-        this._htmlElement = 'input';
+          this._htmlElement = 'input';
       } else {
-        this._htmlElement = 'textarea';
+          this._htmlElement = 'textarea';
       }
-      
       this._changed(/*#=*/Change.GEOMETRY);
       this._wrap(this.view.context);
     },
@@ -216,15 +228,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _changeMode: function (mode) {
+        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+            this._editModeChangeListeners[i].listener(mode);
+        }
+
         this._editMode = mode || !this.editMode;
         if (this._editMode) {
             this._setEditMode();
         } else {
             this._setNormalMode();
-        }
-
-        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
-            this._editModeChangeListeners[i].listener(mode);
         }
     },
 
@@ -276,6 +288,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesAutoWidth: function (element) {
         this._elementStylesFixed(element);
+        element.setAttribute('autocomplete', 'off');
         element.style.position = 'absolute';
         element.style.top = '0.5px';
     },
@@ -325,7 +338,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             }
             var heightSetter;
             if (lastBr) {
-                heightSetter = div.scrollHeight + self.leading;
+                heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
             } else {
                 heightSetter = div.scrollHeight;
             }
@@ -343,7 +356,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
             div.innerHTML = element.value.replace(/\s/g, '!');
-            self._setWidth(div.scrollWidth);
+            self._setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 
         // initial setup
@@ -600,6 +613,17 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @type String
      * @values 'left', 'right', 'center'
      * @default 'center'
+     */
+
+    /**
+     * {@grouptitle Content}
+     *
+     * Lines (array of strings) representation of the content from TextArea
+     *
+     * @name AreaText#lines
+     * @type Array
+     * @values ['first line', 'second line', 'third line']
+     * @default ['']
      */
 
     /**
