@@ -35,6 +35,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         justification: null,
         boundsGenerator: null,
         lines: [],
+        width: null,
+        height: null,
     },
 
     /**
@@ -58,13 +60,36 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._anchor = [0,0];
         this._needsWrap = false;
         this._editMode = false;
-        this._boundsGenerator = 'fixed';
-        TextItem.apply(this, arguments);
-        if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
-            this.setRectangle(arguments[0] || new Rectangle(0, 0));
-        }
-        this._lines = arguments[0].lines || [];
         this._htmlElement = 'textarea';
+        this._rectangle = new Rectangle(0, 0, 1, 1);
+
+        if (arguments[0] && arguments[0].boundsGenerator) {
+            this._boundsGenerator = arguments[0].boundsGenerator;
+            delete arguments[0].boundsGenerator;
+        } else {
+            this._boundsGenerator = 'fixed';
+        }
+
+        TextItem.apply(this, arguments);
+
+        if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
+            this.setRectangle(arguments[0]);
+        }
+
+        if (arguments[0] && arguments[0].height) {
+            this.setHeight(arguments[0].height);
+        }
+
+        if (arguments[0] && arguments[0].width) {
+            this.setWidth(arguments[0].width);
+        }
+
+        if (arguments[0] && arguments[0].matrix) {
+            this._rectangle.x = arguments[0].matrix[4];
+            this._rectangle.y = arguments[0].matrix[5];
+        }
+
+        this._lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
         this._onDoubleClick();
     },
 
@@ -142,18 +167,22 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setBoundsGenerator: function (generator) {
-      if (this._boundsGenerators.indexOf(generator) === -1) {
-          throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
-      }
+        if (this._boundsGenerators.indexOf(generator) === -1) {
+            throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
+        }
 
-      this._boundsGenerator = generator;
-      if (generator === 'auto-width') {
-          this._htmlElement = 'input';
-      } else {
-          this._htmlElement = 'textarea';
-      }
-      this._changed(/*#=*/Change.GEOMETRY);
-      this._wrap(this.view.context);
+        this._boundsGenerator = generator;
+        if (generator === 'auto-width') {
+            this._htmlElement = 'input';
+        } else {
+            this._htmlElement = 'textarea';
+        }
+
+
+        this._changed(/*#=*/Change.GEOMETRY);
+        if (generator !== 'fixed') {
+            this._wrap(this.view.context);
+        }
     },
 
     /**
@@ -198,16 +227,24 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._updateAnchor();
     },
 
-    _setHeight: function () {
-        this._rectangle.height = arguments[0];
-        this._updateAnchor();
-        this._changed(/*#=*/Change.GEOMETRY);
+    getHeight: function () {
+        return this._rectangle.height;
     },
 
-    _setWidth: function () {
+    setHeight: function () {
+        this._rectangle.height = arguments[0];
+        this._updateAnchor();
+        this._changed(9);
+    },
+
+    getWidth: function () {
+        return this._rectangle.width;
+    },
+
+    setWidth: function () {
         this._rectangle.width = arguments[0];
         this._updateAnchor();
-        this._changed(/*#=*/Change.GEOMETRY);
+        this._changed(9);
     },
 
     /**
@@ -343,7 +380,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 heightSetter = div.scrollHeight;
             }
             element.style.height = heightSetter + 'px';
-            self._setHeight(heightSetter / self.viewMatrix.scaling.y);
+            self.setHeight(heightSetter / self.viewMatrix.scaling.y);
         }
 
 
@@ -356,7 +393,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
             div.innerHTML = element.value.replace(/\s/g, '!');
-            self._setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
+            self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 
         // initial setup
@@ -442,17 +479,19 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         var words = this.content
                 .replace(/\n/g, ' ')
-                .split(' '),
+                .split(' ')
+                .filter(function (w) {
+                    return w !== '';
+                }),
             line = '';
 
         if (this._boundsGenerator === 'auto-width') {
             this._lines = [this.content];
             var width = ctx.measureText(this._lines[0]).width;
-            this._setWidth(width);
-            this._setHeight(this.getStyle().leading);
+            this.setWidth(width);
+            this.setHeight(this.getStyle().leading);
             return;
         }
-
 
         for (var i = 0; i < words.length; ++i) {
             var metrics = ctx.measureText(words[i]);
@@ -464,6 +503,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                     words[i] = words[i].slice(0, -1);
                 }
 
+                if (i > 1000) {
+                    throw new Error('Width is too small. Failed adjusting');
+                }
+
                 if (newSubStr !== '') {
                     Base.insertAt(words, i + 1, newSubStr.split('').reverse().join(''));
                 } else {
@@ -473,8 +516,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         for (var i = 0; i < words.length; i++) {
-            // use metrics width to determine if the word needs
-            // to be sent on the next line
             var textLine = line + words[i] + ' ',
                 metrics = ctx.measureText(textLine),
                 testWidth = metrics.width;
@@ -490,7 +531,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         if (this._boundsGenerator === 'auto-height') {
             var height = (this.getStyle().leading) * (this._lines.length );
-            this._setHeight(height);
+            this.setHeight(height);
         }
     },
 
