@@ -139,7 +139,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
       } else {
         this._htmlElement = 'textarea';
       }
-      
+
       this._changed(/*#=*/Change.GEOMETRY);
       this._wrap(this.view.context);
     },
@@ -250,6 +250,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesFixed: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
+        element.style.color = this._style.fillColor;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
@@ -354,6 +355,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditElementDOM: function (container) {
         document.body.appendChild(container);
+        document.body.style.overflow = 'hidden';
 
         var element = document.createElement(this._htmlElement);
         element.id = this._htmlId;
@@ -414,6 +416,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setNormalMode: function () {
         var element = document.getElementById(this._htmlParentId);
+        if (element.parentNode) {
+            element.parentNode.style.overflow = 'initial';
+        }
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
         this._inputOutsideClick('remove');
