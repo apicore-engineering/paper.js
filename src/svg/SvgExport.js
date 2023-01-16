@@ -264,6 +264,31 @@ new function() {
         return node;
     }
 
+    function exportAreaText(item) {
+        var attribs = getTransform(item._matrix, true);
+        attribs.type = 'text-area';
+        attribs.dy = attribs.y;
+        attribs.width = item.bounds.width;
+        attribs.height = item.bounds.height;
+        attribs.generator = item.boundsGenerator;
+        var node = SvgElement.create('text', attribs,
+            formatter);
+        delete attribs.y;
+        delete attribs.x;
+        delete attribs.width;
+        delete attribs.height;
+        delete attribs.generator;
+        attribs.dy = 0;
+        for (var i = 0; i < item.lines.length; i++) {
+            var tspan = SvgElement.create('tspan', attribs, formatter);
+            tspan.textContent = item.lines[i];
+            attribs.dy = item._style.leading;
+            node.appendChild(tspan);
+        }
+
+        return node;
+    }
+
     var exporters = {
         Group: exportGroup,
         Layer: exportGroup,
@@ -272,7 +297,8 @@ new function() {
         Shape: exportShape,
         CompoundPath: exportCompoundPath,
         SymbolItem: exportSymbolItem,
-        PointText: exportText
+        PointText: exportText,
+        AreaText: exportAreaText,
     };
 
     function applyStyle(item, node, isRoot) {
