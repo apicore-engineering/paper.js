@@ -527,7 +527,7 @@ new function() {
             // We also need to filter out inheritance from their parents.
             var style = Base.camelize(name);
             value = node.style[style];
-            if (!value && styles.node[style] !== styles.parent[style])
+            if (!value && styles && styles.node[style] !== styles.parent[style])
                 value = styles.node[style];
         }
         // Return undefined if attribute is not defined, but null if it's
