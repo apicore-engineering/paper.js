@@ -179,7 +179,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
 
-        this._changed(/*#=*/Change.GEOMETRY);
+        this._changed(/*#=*/Change.APPEARANCE);
         if (generator !== 'fixed') {
             this._wrap(this.view.context);
         }
@@ -265,6 +265,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _changeMode: function (mode) {
+        mode = !!mode;
         for (var i = 0; i < this._editModeChangeListeners.length; i++) {
             this._editModeChangeListeners[i].listener(mode);
         }
@@ -283,7 +284,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = '100%';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
-        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 0.5  + 'px';
+        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty  + 'px';
         container.style.maxHeight = this.view.getViewSize().height + 'px';
     },
 
@@ -328,7 +329,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._elementStylesFixed(element);
         element.setAttribute('autocomplete', 'off');
         element.style.position = 'absolute';
-        element.style.top = '0.5px';
     },
 
     _divStylesFixed: function (div) {
@@ -406,9 +406,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _setEditElementDOM: function (container) {
         document.body.appendChild(container);
         document.body.style.overflow = 'hidden';
+        container.classList.add('area-text');
 
         var element = document.createElement(this._htmlElement);
         element.id = this._htmlId;
+        element.classList.add('area-text-input');
 
         container.appendChild(element);
         this._setContainerStyles(container);
