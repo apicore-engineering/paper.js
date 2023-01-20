@@ -90,7 +90,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         this._lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
-        this._onDoubleClick();
     },
 
     _addListener: function (listener, name) {
@@ -284,7 +283,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = '100%';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
-        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty  + 'px';
+        var topOffset = (this.viewMatrix.scaling.y * 1.5);
+        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + topOffset + 'px';
         container.style.maxHeight = this.view.getViewSize().height + 'px';
     },
 
