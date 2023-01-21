@@ -444,26 +444,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         this._setEditElementDOM(element);
         this.setContent('');
-        this._inputOutsideClick('add');
-    },
-
-    _outsideClick: function (e) {
-        var element = document.getElementById(this.getHtmlId());
-        if (!e.target.isSameNode(element)) {
-            this._changeMode(false);
-        }
-    },
-
-    _inputOutsideClick: function (/* */) {
-        var self = this;
-        if (arguments[0] === 'add') {
-            self._outsideClickId = self._outsideClick.bind(self);
-            window.setTimeout(function () {
-                document.addEventListener('click', self._outsideClickId, true);
-            }, 50);
-        } else {
-            document.removeEventListener('click', self._outsideClickId, true);
-        }
     },
 
     _setNormalMode: function () {
@@ -473,7 +453,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
-        this._inputOutsideClick('remove');
         this._wrap(this.view.context);
     },
 
