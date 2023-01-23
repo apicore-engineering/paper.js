@@ -90,7 +90,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         this._lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
-        this._onDoubleClick();
     },
 
     _addListener: function (listener, name) {
@@ -179,7 +178,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
 
-        this._changed(/*#=*/Change.GEOMETRY);
+        this._changed(/*#=*/Change.APPEARANCE);
         if (generator !== 'fixed') {
             this._wrap(this.view.context);
         }
@@ -234,7 +233,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     setHeight: function () {
         this._rectangle.height = arguments[0];
         this._updateAnchor();
-        this._changed(9);
+        this._changed(/*#=*/Change.GEOMETRY);
     },
 
     getWidth: function () {
@@ -244,7 +243,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     setWidth: function () {
         this._rectangle.width = arguments[0];
         this._updateAnchor();
-        this._changed(9);
+        this._changed(/*#=*/Change.GEOMETRY);
     },
 
     /**
@@ -265,6 +264,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _changeMode: function (mode) {
+        mode = !!mode;
         for (var i = 0; i < this._editModeChangeListeners.length; i++) {
             this._editModeChangeListeners[i].listener(mode);
         }
@@ -283,7 +283,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = '100%';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
-        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 0.5  + 'px';
+        var topOffset = (this.viewMatrix.scaling.y * 1.5);
+        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + topOffset + 'px';
         container.style.maxHeight = this.view.getViewSize().height + 'px';
     },
 
@@ -299,6 +300,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _elementStylesFixed: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
+        element.style.color = this._style.fillColor.toCSS(true);
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
@@ -327,7 +329,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._elementStylesFixed(element);
         element.setAttribute('autocomplete', 'off');
         element.style.position = 'absolute';
-        element.style.top = '0.5px';
     },
 
     _divStylesFixed: function (div) {
@@ -404,9 +405,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditElementDOM: function (container) {
         document.body.appendChild(container);
+        document.body.style.overflow = 'hidden';
+        container.classList.add('area-text');
 
         var element = document.createElement(this._htmlElement);
         element.id = this._htmlId;
+        element.classList.add('area-text-input');
 
         container.appendChild(element);
         this._setContainerStyles(container);
@@ -440,33 +444,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         this._setEditElementDOM(element);
         this.setContent('');
-        this._inputOutsideClick('add');
-    },
-
-    _outsideClick: function (e) {
-        var element = document.getElementById(this.getHtmlId());
-        if (!e.target.isSameNode(element)) {
-            this._changeMode(false);
-        }
-    },
-
-    _inputOutsideClick: function (/* */) {
-        var self = this;
-        if (arguments[0] === 'add') {
-            self._outsideClickId = self._outsideClick.bind(self);
-            window.setTimeout(function () {
-                document.addEventListener('click', self._outsideClickId, true);
-            }, 50);
-        } else {
-            document.removeEventListener('click', self._outsideClickId, true);
-        }
     },
 
     _setNormalMode: function () {
         var element = document.getElementById(this._htmlParentId);
+        if (element.parentNode) {
+            element.parentNode.style.overflow = 'initial';
+        }
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
-        this._inputOutsideClick('remove');
         this._wrap(this.view.context);
     },
 
