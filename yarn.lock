@@ -4555,7 +4555,7 @@ __metadata:
   dependencies:
     canvas: ^2.10.1
     jsdom: ^16.7.0
-    paper: 0.12.16
+    paper: 0.12.17
     source-map-support: ^0.5.21
   languageName: unknown
   linkType: soft
@@ -4565,15 +4565,15 @@ __metadata:
   resolution: "paper-jsdom@workspace:packages/paper-jsdom"
   dependencies:
     jsdom: ^16.7.0
-    paper: 0.12.16
+    paper: 0.12.17
     source-map-support: ^0.5.21
   languageName: unknown
   linkType: soft
 
-"paper@npm:0.12.16":
-  version: 0.12.16
-  resolution: "paper@npm:0.12.16"
-  checksum: fdfa10383c6683eed4501db8f000ff4aefd1af3e27765fe3cf38f6431881c07e5698c7d3da8caf383d6c5e6d35cfefa7e57b3c832fd6df9692acee92873d9254
+"paper@npm:0.12.17":
+  version: 0.12.17
+  resolution: "paper@npm:0.12.17"
+  checksum: f582806a9924a58d7f4a60476646fa7215b3a2d00f7efa935679d26fc345af0fb74338368a081bdea2ffa871425b067fb548fe2ea44a10dd86fbff0220905d56
   languageName: node
   linkType: hard
 
