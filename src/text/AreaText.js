@@ -301,6 +301,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _elementStylesFixed: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.color = this._style.fillColor.toCSS(true);
+        element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         element.style.fontWeight = this._style.fontWeight;
