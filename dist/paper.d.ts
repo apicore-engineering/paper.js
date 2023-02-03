@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.16 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.17 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,13 +9,15 @@
  *
  * All rights reserved.
  *
- * Date: Mon Nov 7 22:01:53 2022 +0100
+ * Date: Tue Jan 31 16:08:36 2023 +0100
  *
  * This is an auto-generated type definition.
  */
 
 declare namespace paper {
     type BoundsGenerator = 'auto-height' | 'auto-width' | 'fixed'
+    type TextTransform = 'initial' | 'uppercase' | 'lowercase' | 'capitalize'
+    type TextJustification = 'left' | 'right' | 'center'
     type EventCallback = (e: KeyboardEvent) => void
     type BooleanCallback = (b: boolean) => void
     type AnyCallback = (a: any) => void
@@ -57,7 +59,12 @@ declare namespace paper {
         /**
          * Current justification of the TextArea
          */
-        justification: string
+        justification: TextJustification
+
+        /**
+         * Lines (array of strings) representation of the content from TextArea
+         */
+        lines: any[]
 
         /**
          * Define the mode of AreaText (can be edit mode or not edit mode).
@@ -65,6 +72,13 @@ declare namespace paper {
          * field should open for the editing content
          */
         editMode: boolean
+
+        /**
+         * Define the mode of AreaText (can be edit mode or not edit mode).
+         * In the edit mode the special input
+         * field should open for the editing content
+         */
+        textTransform: TextTransform
 
         /**
          * ID of the HTML element
