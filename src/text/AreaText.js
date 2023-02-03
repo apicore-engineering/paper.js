@@ -30,8 +30,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
     _editModeListeners: [],
     _editModeChangeListeners: [],
+    _textTransform: 'initial',
 
     _serializeFields: {
+        textTransform: null,
         justification: null,
         boundsGenerator: null,
         lines: [],
@@ -140,6 +142,22 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     /**
+     * Determines if the AreaText is in edit mode
+     * ( In edit mode input for the current is being active )
+     *
+     * @bean
+     * @type {Boolean}
+     */
+    getTextTransform: function () {
+        return this._textTransform;
+    },
+
+    setTextTransform: function () {
+        this._textTransform = arguments[0];
+        this.setContent(this._content);
+    },
+
+    /**
      * ID of the HTML element
      * @return {string}
      */
@@ -198,6 +216,13 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * Setter for content.
      */
     setContent: function (content) {
+        if (this._textTransform === 'uppercase') {
+            content = content.toUpperCase();
+        } else if (this._textTransform === 'lowercase') {
+            content = content.toLowerCase();
+        } else if (this._textTransform === 'capitalize') {
+            content = Base.capitalize(content);
+        }
         this._content = '' + content;
         this._needsWrap = true;
         this._changed(/*#=*/Change.CONTENT);
@@ -294,13 +319,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _containerStylesAutoWidth: function (container) {
         this._containerStylesFixed(container);
-        container.style.width = '100%';
+        container.style.width = 'auto';
         container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesFixed: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.color = this._style.fillColor.toCSS(true);
+        element.style.textTransform = this._textTransform;
         element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
@@ -638,7 +664,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * Current justification of the TextArea
      *
      * @name AreaText#justification
-     * @type String
+     * @type TextJustification
      * @values 'left', 'right', 'center'
      * @default 'center'
      */
@@ -664,6 +690,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @name AreaText#editMode
      * @type Boolean
      * @default false
+     */
+
+    /**
+     * {@grouptitle Content}
+     *
+     * Define the mode of AreaText (can be edit mode or not edit mode).
+     * In the edit mode the special input
+     * field should open for the editing content
+     *
+     * @name AreaText#textTransform
+     * @type TextTransform
+     * @default 'initial'
      */
 
     /**
