@@ -102,12 +102,12 @@ test('AreaText(boundsGenerators)', function () {
     var point = new Point(30, 30);
     var size = new Size(100, 100);
     var text = new AreaText(new Rectangle(point, size));
-    var editElement = document.body.querySelector('#' + text.htmlId);
 
     // check width
     equals(function () {
         text.boundsGenerator = 'fixed';
         text.editMode = true;
+        var editElement = document.body.querySelector('#' + text.htmlId);
         return +editElement.parentElement.style.width.replace('px', '');
     }, text.rectangle.width);
 
@@ -115,6 +115,7 @@ test('AreaText(boundsGenerators)', function () {
     equals(function () {
         text.boundsGenerator = 'fixed';
         text.editMode = true;
+        var editElement = document.body.querySelector('#' + text.htmlId);
         return +editElement.parentElement.style.height.replace('%', '');
     }, 100);
 });

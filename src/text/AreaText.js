@@ -311,7 +311,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _changeMode: function (mode) {
         mode = !!mode;
-        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+        for (var i = 0; Array.isArray(this._editModeChangeListeners) && i < this._editModeChangeListeners.length; i++) {
             this._editModeChangeListeners[i].listener(mode);
         }
 
@@ -478,8 +478,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         var self = this;
         element.addEventListener('input', function (e) {
-            // console.log(self._editModeListeners.length, self.htmlId, self._editModeListeners);
-            for (var i = 0; i < self._editModeListeners.length; i++) {
+            for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
                 self._editModeListeners[i].listener(e);
             }
         });
