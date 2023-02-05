@@ -28,8 +28,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _htmlId: 'area-text',
     _outsideClickId: null,
     _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
-    _editModeListeners: [],
-    _editModeChangeListeners: [],
+    _editModeListeners: null,
+    _editModeChangeListeners: null,
     _textTransform: 'initial',
 
     _serializeFields: {
@@ -73,6 +73,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         TextItem.apply(this, arguments);
+        this._htmlId += UID.get(this._htmlId);
 
         if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
             this.setRectangle(arguments[0]);
@@ -100,6 +101,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         var id = UID.get();
         var self = this;
+        if (!this[name]) {
+            this[name] = [];
+        }
         this[name].push({ id: id, listener: listener });
         return function () {
             self[name] = self[name].filter(function (listener) {
@@ -155,6 +159,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     setTextTransform: function () {
         this._textTransform = arguments[0];
         this.setContent(this._content);
+        this._redraw();
     },
 
     /**
@@ -251,6 +256,22 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._updateAnchor();
     },
 
+    getFontWeight: function () {
+        return this._style.fontWeight;
+    },
+
+    setFontWeight: function () {
+        this._style.fontWeight = arguments[0];
+        this._redraw();
+    },
+
+    _redraw: function() {
+        this._needsWrap = true;
+        if (this._oldParams) {
+            this.draw(this.view.context, this._oldParams, this._oldViewMatrix);
+        }
+    },
+
     getHeight: function () {
         return this._rectangle.height;
     },
@@ -290,7 +311,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _changeMode: function (mode) {
         mode = !!mode;
-        for (var i = 0; i < this._editModeChangeListeners.length; i++) {
+        for (var i = 0; Array.isArray(this._editModeChangeListeners) && i < this._editModeChangeListeners.length; i++) {
             this._editModeChangeListeners[i].listener(mode);
         }
 
@@ -330,7 +351,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
-        element.style.fontWeight = this._style.fontWeight;
+        element.style.fontWeight = this.fontWeight;
         element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
         element.style.transformOrigin = 'top left';
         element.style.transform = 'rotate(' + this.rotation + 'deg)';
@@ -362,7 +383,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
-        div.style.fontWeight = this._style.fontWeight;
+        div.style.fontWeight = this.fontWeight;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
         div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
@@ -457,7 +478,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
         var self = this;
         element.addEventListener('input', function (e) {
-            for (var i = 0; i < self._editModeListeners.length; i++) {
+            for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
                 self._editModeListeners[i].listener(e);
             }
         });
@@ -501,6 +522,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         if (this._boundsGenerator === 'auto-width') {
             this._lines = [this.content];
             var width = ctx.measureText(this._lines[0]).width;
+            ctx.font = this.style.getFontStyle();
+            ctx.textAlign = this.style.getJustification();
             this.setWidth(width);
             this.setHeight(this.getStyle().leading);
             return;
@@ -566,12 +589,17 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         return this._anchor;
     },
 
+    _oldViewMatrix: null,
+    _oldParams: null,
+
     _draw: function (ctx, params, viewMatrix) {
         if (!this._content) {
             return;
         }
 
         this._setStyles(ctx, params, viewMatrix);
+        this._oldParams = params;
+        this._oldViewMatrix = viewMatrix;
 
         var style = this._style,
             hasFill = style.hasFill(),
@@ -667,6 +695,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @type TextJustification
      * @values 'left', 'right', 'center'
      * @default 'center'
+     */
+
+    /**
+     *
+     * The font-weight to be used in text content.
+     *
+     * @name TextItem#fontWeight
+     * @type String|Number
+     * @default 'normal'
      */
 
     /**
