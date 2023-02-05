@@ -102,7 +102,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var id = UID.get();
         var self = this;
         if (!this[name]) {
-            this[name] = new Array();
+            this[name] = [];
         }
         this[name].push({ id: id, listener: listener });
         return function () {
