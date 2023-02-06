@@ -27,7 +27,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _allowedElements: ['input', 'textarea'],
     _htmlId: 'area-text',
     _outsideClickId: null,
-    _boundsGenerators: ['auto-height', 'auto-width', 'fixed'],
+    _boundsGenerators: ['auto-height', 'auto-width'],
     _editModeListeners: null,
     _editModeChangeListeners: null,
     _textTransform: 'initial',
@@ -69,7 +69,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._boundsGenerator = arguments[0].boundsGenerator;
             delete arguments[0].boundsGenerator;
         } else {
-            this._boundsGenerator = 'fixed';
+            this._boundsGenerator = 'auto-width';
         }
 
         TextItem.apply(this, arguments);
@@ -202,9 +202,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
 
         this._changed(/*#=*/Change.APPEARANCE);
-        if (generator !== 'fixed') {
-            this._wrap(this.view.context);
-        }
+        this._wrap(this.view.context);
     },
 
     /**
@@ -323,11 +321,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
     },
 
-    _containerStylesFixed: function (container) {
+    _containerStyles: function (container) {
         var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
         container.style.position = 'absolute';
         container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
-        container.style.height = '100%';
+        container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
         var topOffset = (this.viewMatrix.scaling.y * 1.5);
         container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + topOffset + 'px';
@@ -335,16 +333,16 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _containerStylesAutoHeight: function (container) {
-        this._containerStylesFixed(container);
+        container.style.height = '100%';
+        this._containerStyles(container);
     },
 
     _containerStylesAutoWidth: function (container) {
-        this._containerStylesFixed(container);
+        this._containerStyles(container);
         container.style.width = 'auto';
-        container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
     },
 
-    _elementStylesFixed: function (element) {
+    _elementStyles: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.color = this._style.fillColor.toCSS(true);
         element.style.textTransform = this._textTransform;
@@ -369,17 +367,17 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _elementStylesAutoHeight: function (element) {
-        this._elementStylesFixed(element);
+        this._elementStyles(element);
         element.style.height = this.rectangle.height * this.viewMatrix.scaling.y + 'px';
     },
 
     _elementStylesAutoWidth: function (element) {
-        this._elementStylesFixed(element);
+        this._elementStyles(element);
         element.setAttribute('autocomplete', 'off');
         element.style.position = 'absolute';
     },
 
-    _divStylesFixed: function (div) {
+    _divStyles: function (div) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
@@ -392,11 +390,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _divStylesAutoHeight: function (div) {
-        this._divStylesFixed(div);
+        this._divStyles(div);
     },
 
     _divStylesAutoWidth: function (div) {
-        this._divStylesFixed(div);
+        this._divStyles(div);
         div.style.width = 'fit-content';
     },
 
@@ -766,13 +764,13 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     /**
      *
      * Defines the way of rendering text
-     * Default if fixed, meaning the overflown text will be drawn outside the bounds.
+     * Default if auto-width, meaning the overflown text will be drawn outside the bounds.
      * If 'auto-width' then draw on one line. If 'auto-height' then adjust the height
      * Bounds generator
      *
      * @name AreaText#boundsGenerator
      * @type BoundsGenerator
-     * @default 'fixed'
+     * @default 'auto-width'
      */
 
     /**
