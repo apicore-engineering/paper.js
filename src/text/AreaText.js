@@ -384,6 +384,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this.fontWeight;
+        div.style.textTransform = this._textTransform;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
         div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
@@ -452,21 +453,35 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setEditElementDOM: function (container) {
+        var childElement = document.createElement('div');
+        container.style.overflow = 'hidden';
+        container.style.position = 'fixed';
+        container.style.top = 0 + '';
+        container.style.left = 0 + '';
+        container.style.width = 0 + '';
+        container.style.height = 0 + '';
+
+        var wrapper = document.createElement('div');
+        wrapper.style.pointerEvents = 'auto';
+        wrapper.style.position = 'fixed';
+
+        wrapper.appendChild(childElement);
+        container.appendChild(wrapper);
+
         document.body.appendChild(container);
-        document.body.style.overflow = 'hidden';
         container.classList.add('area-text');
 
         var element = document.createElement(this._htmlElement);
         element.id = this._htmlId;
         element.classList.add('area-text-input');
 
-        container.appendChild(element);
-        this._setContainerStyles(container);
+        childElement.appendChild(element);
+        this._setContainerStyles(childElement);
         this._setElementStyles(element);
 
         // create div as well
         var div = document.createElement('div');
-        container.appendChild(div);
+        childElement.appendChild(div);
         this._setDivStyles(div);
 
         element.value = '' + this._content;
@@ -496,9 +511,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setNormalMode: function () {
         var element = document.getElementById(this._htmlParentId);
-        if (element.parentNode) {
-            element.parentNode.style.overflow = 'initial';
-        }
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
         this._wrap(this.view.context);
