@@ -327,8 +327,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
         container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
-        var topOffset = (this.viewMatrix.scaling.y * 1.5);
-        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + topOffset + 'px';
+        container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 'px';
         container.style.maxHeight = this.view.getViewSize().height + 'px';
     },
 
