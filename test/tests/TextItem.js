@@ -82,7 +82,7 @@ test('AreaText(editMode)', function () {
         canvas.width = 400;
         canvas.height = 400;
         text.boundsGenerator = 'auto-height';
-        text.width = 100;
+        text.width = 110;
         text.content = 'Hello!This is a multiline text.It should contain multiple lines.';
         text._wrap(canvas.getContext('2d'));
         return text._lines.length;
