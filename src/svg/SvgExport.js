@@ -266,16 +266,13 @@ new function() {
 
     function exportAreaText(item) {
         var attribs = getTransform(item._matrix, true);
-        attribs.type = 'text-area';
         var size = item.bounds.size;
         attribs.width = size.width;
         attribs.height = size.height;
-        attribs.y += attribs.height;
-        attribs.generator = item.boundsGenerator;
-        attribs.y += item.fontSize - size.height + 0.5;
-        attribs.x += -0.025 * item.fontSize;
-        var x1 = attribs.x;
-        var y1 = attribs.y;
+
+        var x1 = attribs.x + -0.025 * item.fontSize;
+        var y1 = attribs.y + attribs.height + item.fontSize - size.height + 0.5;
+
         delete attribs.y;
         delete attribs.x;
         var node = SvgElement.create('text', attribs,
@@ -283,10 +280,12 @@ new function() {
         delete attribs.width;
         delete attribs.height;
         delete attribs.generator;
-        attribs.dy = 0;
-        attribs.dx = 0;
+        delete attribs.dy;
+        delete attribs.dx;
+
         attribs.x = x1;
         attribs.y = y1;
+
         for (var i = 0; i < item.lines.length; i++) {
             var tspan = SvgElement.create('tspan', attribs, formatter);
             tspan.textContent = item.lines[i];
