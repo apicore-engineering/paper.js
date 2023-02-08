@@ -83,10 +83,10 @@ test('AreaText(editMode)', function () {
         canvas.height = 400;
         text.boundsGenerator = 'auto-height';
         text.width = 110;
-        text.content = 'Hello!This is a multiline text.It should contain multiple lines.';
+        text.content = 'Hello! This is a multiline text. It should contain multiple lines.';
         text._wrap(canvas.getContext('2d'));
         return text._lines.length;
-    }, 3 || 4, 'Should have multiple lines');
+    }, 3, 'Should have multiple lines');
 
 
     // emit the double click and check that the editMode has been changed
