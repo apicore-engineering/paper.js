@@ -267,22 +267,30 @@ new function() {
     function exportAreaText(item) {
         var attribs = getTransform(item._matrix, true);
         attribs.type = 'text-area';
-        attribs.dy = attribs.y;
-        attribs.width = item.bounds.width;
-        attribs.height = item.bounds.height;
+        var size = item.bounds.size;
+        attribs.width = size.width;
+        attribs.height = size.height;
+        attribs.y += attribs.height;
         attribs.generator = item.boundsGenerator;
-        var node = SvgElement.create('text', attribs,
-            formatter);
+        attribs.y += item.fontSize - size.height + 0.5;
+        attribs.x += -0.025 * item.fontSize;
+        var x1 = attribs.x;
+        var y1 = attribs.y;
         delete attribs.y;
         delete attribs.x;
+        var node = SvgElement.create('text', attribs,
+            formatter);
         delete attribs.width;
         delete attribs.height;
         delete attribs.generator;
         attribs.dy = 0;
+        attribs.dx = 0;
+        attribs.x = x1;
+        attribs.y = y1;
         for (var i = 0; i < item.lines.length; i++) {
             var tspan = SvgElement.create('tspan', attribs, formatter);
             tspan.textContent = item.lines[i];
-            attribs.dy = item._style.leading;
+            attribs.y += item._style.leading;
             node.appendChild(tspan);
         }
 
