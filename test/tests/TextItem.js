@@ -81,10 +81,12 @@ test('AreaText(editMode)', function () {
         var canvas = document.createElement('canvas');
         canvas.width = 400;
         canvas.height = 400;
-        text.content = 'Hello! This is a multiline text. It should contain multiple lines.';
+        text.boundsGenerator = 'auto-height';
+        text.width = 100;
+        text.content = 'Hello!This is a multiline text.It should contain multiple lines.';
         text._wrap(canvas.getContext('2d'));
         return text._lines.length;
-    }, 4, 'Should have multiple lines');
+    }, 3, 'Should have multiple lines');
 
 
     // emit the double click and check that the editMode has been changed
@@ -105,7 +107,7 @@ test('AreaText(boundsGenerators)', function () {
 
     // check width
     equals(function () {
-        text.boundsGenerator = 'fixed';
+        text.boundsGenerator = 'auto-height';
         text.editMode = true;
         var editElement = document.body.querySelector('#' + text.htmlId);
         return +editElement.parentElement.style.width.replace('px', '');
@@ -113,9 +115,8 @@ test('AreaText(boundsGenerators)', function () {
 
     // check height
     equals(function () {
-        text.boundsGenerator = 'fixed';
         text.editMode = true;
         var editElement = document.body.querySelector('#' + text.htmlId);
-        return +editElement.parentElement.style.height.replace('%', '');
-    }, 100);
+        return Math.round(+editElement.parentElement.style.height.replace('px', ''));
+    }, 14);
 });
