@@ -304,19 +304,33 @@ new function() {
             // rotate: character rotation
             // lengthAdjust:
             var text;
-            if (getValue(node, 'type', true) === 'text-area') {
+            if (node.getElementsByTagName('tspan').length > 0) {
                 var point = getPoint(node);
                 var size = getSize(node);
-                text = new AreaText(new Rectangle(point, size));
+
+                // for figma/non-paper.js exported texts:
+                if (size.isZero()) {
+                    var svgRect = node.getBoundingClientRect();
+                    size = size.add(new paper.Size(svgRect.width, svgRect.height));
+                }
+
                 var content = '';
                 var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
+
                 for (var i = 0; i < nodeElements.length; i++) {
                     content += nodeElements[i].textContent.trim() + '\n';
+                    size = size.add(getSize(nodeElements[i]));
                 }
+
+                // we need only starting point of the text (if it was not extracted from node itself):
+                point = point.add(getPoint(nodeElements[0]));
+                text = new AreaText(new Rectangle(point, size));
+
+                // adjust text position:
+                text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
                 text.setContent(node.textContent.trim() || '');
-                var generator = getAttribute(node, 'generator');
-                if (generator) {
-                    text.setBoundsGenerator(generator);
+                if (nodeElements.length > 1) {
+                    text.boundsGenerator = 'auto-height';
                 }
             } else {
                 text = new PointText(getPoint(node).add(
