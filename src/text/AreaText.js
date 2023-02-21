@@ -31,6 +31,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _editModeListeners: null,
     _editModeChangeListeners: null,
     _textTransform: 'initial',
+    _lastCharCode: '',
 
     _serializeFields: {
         textTransform: null,
@@ -339,6 +340,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _containerStylesAutoWidth: function (container) {
         this._containerStyles(container);
         container.style.width = 'auto';
+        container.style.whiteSpace = 'nowrap';
     },
 
     _elementStyles: function (element) {
@@ -394,6 +396,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _divStylesAutoWidth: function (div) {
         this._divStyles(div);
+        div.style.wordWrap = 'initial';
+        div.style.display = 'inline-block';
         div.style.width = 'fit-content';
     },
 
@@ -413,16 +417,16 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setEditAutoHeight: function (self, element, div) {
-        function autoHeight() {
-            div.innerHTML = element.value.replace(/\n/g, '<br/>');
-            var innerStrArray = div.innerHTML.split('<');
-            var lastBr = false;
-            if (innerStrArray.length > 0 && (innerStrArray[innerStrArray.length - 1] === 'br>')) {
-                lastBr = true;
-            }
+        function autoHeight(event) {
+            var calcLines = self._calculateLines(self.view.context, element.value);
+            element.value = calcLines.join('\n');
+            div.innerHTML = calcLines
+                .join("<br/>")
+                .replace(/\s/g, '&nbsp;');
             var heightSetter;
-            if (lastBr) {
+            if ((event && event.inputType === 'insertLineBreak')) {
                 heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
+                element.value += '\n';
             } else {
                 heightSetter = div.scrollHeight;
             }
@@ -439,7 +443,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
-            div.innerHTML = element.value.replace(/\s/g, '!');
+            div.innerHTML = element.value.replace(/\s/g, '&nbsp;');
             self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 
@@ -482,13 +486,19 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._setDivStyles(div);
 
         element.value = '' + this._content;
+        var self = this;
+        element.addEventListener('keydown', function (event) {
+            if (event.target.value.endsWith(". ") && event.code === 'Space' && self._lastCharCode === 'Space') {
+                event.target.value = event.target.value.replace(new RegExp(". " + "$"), "  ");
+            }
+            self._lastCharCode = event.code;
+        });
 
         if (this._boundsGenerator === 'auto-height') {
            this._setEditAutoHeight(this, element, div);
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
         }
-        var self = this;
         element.addEventListener('input', function (e) {
             for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
                 self._editModeListeners[i].listener(e);
@@ -517,19 +527,49 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this.on('doubleclick', this._changeMode);
     },
 
+    _calculateLines: function (ctx, content) {
+        var self = this;
+        function calcLines(lines, i) {
+            var newSubStr = '';
+            while (ctx.measureText(lines[i]).width > self.rectangle.width) {
+                newSubStr += lines[i].split('').pop();
+                lines[i] = lines[i].slice(0, -1);
+            }
+
+            if (newSubStr !== '') {
+                Base.insertAt(lines, i + 1, newSubStr.split('').reverse().join(''));
+            }
+        }
+
+        var contentLines = content.split('\n');
+        var lines = [];
+        for (var i = 0; i < contentLines.length || i < lines.length; ++i) {
+            var currentLine = i < contentLines.length ? contentLines[i] : lines[i];
+            if (!currentLine) {
+                break;
+            }
+
+            if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.includes(' ')) {
+                var str = Base.splitOnLast(currentLine, ' ');
+                if (str[0] === currentLine.slice(-1)) {
+                    str = Base.splitOnLast(currentLine.slice(-1), ' ');
+                }
+                lines.push(str[0], str[1]);
+            } else {
+                lines.push(contentLines[i]);
+            }
+            calcLines(lines, i);
+        }
+
+        contentLines = lines.filter(function (s) { return !!s; });
+        return contentLines;
+    },
+
     _wrap: function (ctx) {
         this._lines = [];
 
-        var words = this.content
-                .replace(/\n/g, ' ')
-                .split(' ')
-                .filter(function (w) {
-                    return w !== '';
-                }),
-            line = '';
-
         if (this._boundsGenerator === 'auto-width') {
-            this._lines = [this.content];
+            this._lines.push(this.content.replace('\n', ''));
             var width = ctx.measureText(this._lines[0]).width;
             ctx.font = this.style.getFontStyle();
             ctx.textAlign = this.style.getJustification();
@@ -538,46 +578,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             return;
         }
 
-        for (var i = 0; i < words.length; ++i) {
-            var metrics = ctx.measureText(words[i]);
-
-            if (metrics.width > this.rectangle.width) {
-                var newSubStr = '';
-                while (ctx.measureText(words[i]).width > this.rectangle.width) {
-                    newSubStr += words[i].split('').pop();
-                    words[i] = words[i].slice(0, -1);
-                }
-
-                if (i > 1000) {
-                    throw new Error('Width is too small. Failed adjusting');
-                }
-
-                if (newSubStr !== '') {
-                    Base.insertAt(words, i + 1, newSubStr.split('').reverse().join(''));
-                } else {
-                    throw new Error('Substring is not redefined.');
-                }
-            }
-        }
-
-        for (var i = 0; i < words.length; i++) {
-            var textLine = line + words[i] + ' ',
-                metrics = ctx.measureText(textLine),
-                testWidth = metrics.width;
-            if (testWidth > this.rectangle.width && i > 0) {
-                this._lines.push(line);
-                line = words[i] + ' ';
-            } else {
-                line = textLine;
-            }
-        }
-
-        this._lines.push(line);
-
-        if (this._boundsGenerator === 'auto-height') {
-            var height = (this.getStyle().leading) * (this._lines.length );
-            this.setHeight(height);
-        }
+        this._lines = this._calculateLines(ctx, this.content);
+        var height = (this.getStyle().leading) * (this._lines.length );
+        this.setHeight(height);
     },
 
     _updateAnchor: function () {

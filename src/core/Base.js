@@ -686,6 +686,13 @@ statics: /** @lends Base */{
         }
     },
 
+    splitOnLast: function (str, substring) {
+        var lastIndex = str.lastIndexOf(substring);
+        var before = str.slice(0, lastIndex);
+        var after = str.slice(lastIndex + 1);
+        return [before, after];
+    },
+
     /**
      * Capitalizes the passed string: hello world -> Hello World
      */
