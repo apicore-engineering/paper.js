@@ -17,6 +17,10 @@ var gulp = require('gulp'),
     colors = require('ansi-colors');
 
 gulp.task('watch', function () {
+    exec('npm run build', function (err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+    });
     gulp.watch('src/**/*.js', ['jshint'])
         .on('change', function(event) {
             log(
