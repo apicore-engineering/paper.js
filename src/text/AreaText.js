@@ -545,11 +545,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var lines = [];
         for (var i = 0; i < contentLines.length || i < lines.length; ++i) {
             var currentLine = i < contentLines.length ? contentLines[i] : lines[i];
-            if (!currentLine) {
+            if (!currentLine || typeof currentLine !== 'string') {
                 break;
             }
 
-            if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.includes(' ')) {
+            if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.indexOf(' ') !== -1) {
                 var str = Base.splitOnLast(currentLine, ' ');
                 if (str[0] === currentLine.slice(-1)) {
                     str = Base.splitOnLast(currentLine.slice(-1), ' ');
