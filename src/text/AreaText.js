@@ -73,6 +73,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._boundsGenerator = 'auto-width';
         }
 
+        if (arguments[0] && arguments[0].lines) {
+            this._lines =  arguments[0].lines;
+            delete arguments[0].lines;
+        } else {
+            this._lines = [];
+        }
         TextItem.apply(this, arguments);
         this._htmlId += UID.get(this._htmlId);
 
@@ -92,8 +98,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._rectangle.x = arguments[0].matrix[4];
             this._rectangle.y = arguments[0].matrix[5];
         }
-
-        this._lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
     },
 
     _addListener: function (listener, name) {
