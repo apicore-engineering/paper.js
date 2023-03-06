@@ -65,6 +65,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._editMode = false;
         this._htmlElement = 'textarea';
         this._rectangle = new Rectangle(0, 0, 1, 1);
+        var lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
 
         if (arguments[0] && arguments[0].boundsGenerator) {
             this._boundsGenerator = arguments[0].boundsGenerator;
@@ -74,11 +75,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         if (arguments[0] && arguments[0].lines) {
-            this._lines =  arguments[0].lines;
             delete arguments[0].lines;
-        } else {
-            this._lines = [];
         }
+
         TextItem.apply(this, arguments);
         this._htmlId += UID.get(this._htmlId);
 
@@ -98,7 +97,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._rectangle.x = arguments[0].matrix[4];
             this._rectangle.y = arguments[0].matrix[5];
         }
+
+        this._lines = lines;
     },
+
 
     _addListener: function (listener, name) {
         if (typeof listener !== 'function') {
@@ -127,6 +129,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     getLines: function () {
         return this._lines;
+    },
+
+
+    setLines: function (lines) {
+        this._lines = lines;
     },
 
     /**
