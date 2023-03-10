@@ -322,12 +322,17 @@ new function() {
                     size = size.add(getSize(nodeElements[i]));
                 }
 
-                // we need only starting point of the text (if it was not extracted from node itself):
-                point = point.add(getPoint(nodeElements[0]));
-                text = new AreaText(new Rectangle(point, size));
+                if (Boolean(getAttribute(node, 'transform'))) {
+                    text = new AreaText(new Rectangle(new Point(0, 0), size));
+                } else {
+                    // we need only starting point of the text (if it was not extracted from node itself):
+                    point = point.add(getPoint(nodeElements[0]));
+                    text = new AreaText(new Rectangle(point, size));
 
-                // adjust text position:
-                text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
+                    // adjust text position:
+                    text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
+                }
+                
                 text.setContent(node.textContent.trim() || '');
                 if (nodeElements.length > 1) {
                     text.boundsGenerator = 'auto-height';
