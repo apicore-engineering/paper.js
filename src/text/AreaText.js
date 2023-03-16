@@ -512,7 +512,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.value = '' + this._content;
         var self = this;
         element.addEventListener('keydown', function (event) {
-            if (event.target.value.endsWith(". ") && event.code === 'Space' && self._lastCharCode === 'Space') {
+            if (Base.endsWith(event.target.value, ". ") && event.code === 'Space' && self._lastCharCode === 'Space') {
                 event.target.value = event.target.value.replace(new RegExp(". " + "$"), "  ");
             }
             self._lastCharCode = event.code;

@@ -373,13 +373,17 @@ statics: /** @lends Base */{
         return !!this.getNamed(list, name);
     },
 
+    endsWith: function (str, substr) {
+        return str.indexOf(substr, str.length - substr.length) >= 0;
+    },
+
     calculateLetterSpacing: function(letterSpacing, fontSize, scaling) {
         if (!scaling) {
             scaling = 1;
         }
         var letterSpacingGlobalValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
         function isNumberWith(val) {
-            return letterSpacing.endsWith(val) ||  !isNaN(+letterSpacing.replace(val, ''));
+            return Base.endsWith(letterSpacing, val) ||  !isNaN(+letterSpacing.replace(val, ''));
         }
 
         if (!letterSpacing) {
@@ -388,7 +392,7 @@ statics: /** @lends Base */{
 
         if (!isNaN(+letterSpacing)) {
             return scaling * fontSize * letterSpacing;
-        } else if (letterSpacingGlobalValues.includes(letterSpacing)) {
+        } else if (letterSpacingGlobalValues.indexOf(letterSpacing) !== -1) {
             return letterSpacing;
         } else if (
             isNumberWith('px') || 
