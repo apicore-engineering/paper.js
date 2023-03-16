@@ -80,7 +80,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         TextItem.apply(this, arguments);
         this._htmlId += UID.get(this._htmlId);
-
+        
         if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
             this.setRectangle(arguments[0]);
         }
@@ -266,6 +266,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._updateAnchor();
     },
 
+    getSpacing: function () {
+        return this._style.letterSpacing;
+    },
+
+    setSpacing: function (letterSpacing) {
+        this._style.letterSpacing = letterSpacing;
+        this._redraw();
+    },
+
     getFontWeight: function () {
         return this._style.fontWeight;
     },
@@ -361,6 +370,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
+        // element.style.letterSpacing = this.spacing;
+        this._applyLetterSpacing(element, scaling);
+
         element.style.fontWeight = this.fontWeight;
         element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
         element.style.transformOrigin = 'top left';
@@ -394,6 +406,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this.fontWeight;
+        this._applyLetterSpacing(div);
         div.style.textTransform = this._textTransform;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
@@ -531,7 +544,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var element = document.getElementById(this._htmlParentId);
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
-        this._wrap(this.view.context);
     },
 
     _onDoubleClick: function () {
@@ -793,5 +805,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @name AreaText#editElement
      * @type String
      * @default 'text-area'
+     */
+
+    /**
+     *
+     * Amount of space between elements in the row
+     *
+     * @name AreaText#spacing
+     * @type TextLetterSpacing
+     * @default 'normal'
      */
 });
