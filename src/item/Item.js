@@ -4322,7 +4322,7 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     _applyLetterSpacing: function(el, scaling) {
-        el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling)
+        el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling);
     },
 
     /**
