@@ -388,11 +388,12 @@ statics: /** @lends Base */{
 
         if (!isNaN(+letterSpacing)) {
             return scaling * fontSize * letterSpacing;
+        } else if (letterSpacingGlobalValues.includes(letterSpacing)) {
+            return letterSpacing;
         } else if (
             isNumberWith('px') || 
             isNumberWith('em') || 
-            isNumberWith('rem') || 
-            letterSpacingGlobalValues.includes(letterSpacing)
+            isNumberWith('rem')
         ) {
             return +letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * scaling + letterSpacing.match(/([^0-9.])+/)[0];
         } else if (isNumberWith('%')) {
