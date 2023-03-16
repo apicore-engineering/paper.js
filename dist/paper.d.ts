@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 6 20:55:45 2023 +0100
+ * Date: Fri Mar 10 09:21:20 2023 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -21,6 +21,8 @@ declare namespace paper {
     type EventCallback = (e: KeyboardEvent) => void
     type BooleanCallback = (b: boolean) => void
     type AnyCallback = (a: any) => void
+    type LetterSpacingLiterals = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset' | 'normal'
+    type TextLetterSpacing = string | LetterSpacingLiterals
 
 
     type PointLike = (
@@ -87,7 +89,7 @@ declare namespace paper {
 
         /** 
          * Defines the way of rendering text
-         * Default if fixed, meaning the overflown text will be drawn outside the bounds.
+         * Default if auto-width, meaning the overflown text will be drawn outside the bounds.
          * If 'auto-width' then draw on one line. If 'auto-height' then adjust the height
          * Bounds generator
          */
@@ -97,6 +99,11 @@ declare namespace paper {
          * HTML element name
          */
         editElement: string
+
+        /** 
+         * Amount of space between elements in the row
+         */
+        spacing: TextLetterSpacing
 
 
         /** 
@@ -6633,6 +6640,11 @@ declare namespace paper {
          * The justification of text paragraphs.
          */
         justification: string
+
+        /** 
+         * Sets the horizontal spacing behavior between text characters
+         */
+        letterSpacing: TextLetterSpacing
 
 
         /** 
