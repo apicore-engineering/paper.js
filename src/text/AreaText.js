@@ -406,7 +406,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this.fontWeight;
-        this._applyLetterSpacing(div);
+        this._applyLetterSpacing(div, scaling);
         div.style.textTransform = this._textTransform;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
