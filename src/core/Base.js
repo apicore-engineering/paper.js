@@ -373,6 +373,35 @@ statics: /** @lends Base */{
         return !!this.getNamed(list, name);
     },
 
+    calculateLetterSpacing: function(letterSpacing, fontSize, scaling) {
+        if (!scaling) {
+            scaling = 1;
+        }
+        var letterSpacingGlobalValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+        function isNumberWith(val) {
+            return letterSpacing.endsWith(val) ||  !isNaN(+letterSpacing.replace(val, ''));
+        }
+
+        if (!letterSpacing) {
+            return 'normal';
+        }
+
+        if (!isNaN(+letterSpacing)) {
+            return scaling * fontSize * letterSpacing;
+        } else if (
+            isNumberWith('px') || 
+            isNumberWith('em') || 
+            isNumberWith('rem') || 
+            letterSpacingGlobalValues.includes(letterSpacing)
+        ) {
+            return +letterSpacing.match(/\d+/)[0] * scaling + letterSpacing.match(/[^0-9]+/);
+        } else if (isNumberWith('%')) {
+            return (scaling * fontSize * (+letterSpacing.replace('%', '') / 100)) + 'px';
+        } else {
+            return 'normal';
+        }
+    },
+
     /**
      * Copies all properties from `source` over to `dest`, supporting
      * `_filtered` handling as required by {@link Base.readNamed()} mechanism,
