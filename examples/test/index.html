@@ -31,11 +31,14 @@
     // pointText.selected = true;
 
     areaText.selected = true;
-    areaText.boundsGenerator = 'fixed';
+    areaText.boundsGenerator = 'auto-width';
+    areaText.fontWeight = 'bold';
 
     const areaText1 = new paper.AreaText(new paper.Rectangle(new paper.Point(100, 100), size));
     areaText1.fillColor = 'black';
+    areaText1.spacing = '30%';
     areaText1.content = 'Some new text here';
+    areaText1.style.fontFamily = 'serif';
     areaText1.selected = true;
     const removeModeChanged = areaText1.addEditModeListener(function (e) {
         console.log(e.target.value, 'edit mode changed')
