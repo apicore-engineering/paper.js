@@ -96,6 +96,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
+        letterSpacing: 'normal',
         // Paragraphs
         justification: 'left'
     }),
@@ -115,7 +116,8 @@ var Style = Base.extend(new function() {
         fontSize: /*#=*/Change.GEOMETRY,
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
         leading: /*#=*/Change.GEOMETRY,
-        justification: /*#=*/Change.GEOMETRY
+        justification: /*#=*/Change.GEOMETRY,
+        letterSpacing: /*#=*/Change.GEOMETRY,
     },
     item = {
         // Enforce creation of beans, as bean getters have hidden parameters,
@@ -392,8 +394,8 @@ var Style = Base.extend(new function() {
         if (/pt|em|%|px/.test(fontSize))
             fontSize = this.getView().getPixelSize(fontSize);
         return leading != null ? leading : fontSize * 1.2;
-    }
-
+    },
+    
     // DOCS: why isn't the example code showing up?
     /**
      * Style objects don't need to be created directly. Just pass an object to
@@ -701,5 +703,13 @@ var Style = Base.extend(new function() {
      * @type String
      * @values 'left', 'right', 'center'
      * @default 'left'
+     */
+
+    /**
+     * Sets the horizontal spacing behavior between text characters
+     *
+     * @name Style#letterSpacing
+     * @type TextLetterSpacing
+     * @default 'normal'
      */
 });

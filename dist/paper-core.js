@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 3 21:15:36 2022 +0100
+ * Date: Thu Mar 16 11:53:04 2023 +0100
  *
  ***
  *
@@ -430,6 +430,35 @@ statics: {
 		return !!this.getNamed(list, name);
 	},
 
+	calculateLetterSpacing: function(letterSpacing, fontSize, scaling) {
+		if (!scaling) {
+			scaling = 1;
+		}
+		var letterSpacingGlobalValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+		function isNumberWith(val) {
+			return letterSpacing.endsWith(val) ||  !isNaN(+letterSpacing.replace(val, ''));
+		}
+
+		if (!letterSpacing) {
+			return 'normal';
+		}
+
+		if (!isNaN(+letterSpacing)) {
+			return scaling * fontSize * letterSpacing;
+		} else if (
+			isNumberWith('px') ||
+			isNumberWith('em') ||
+			isNumberWith('rem') ||
+			letterSpacingGlobalValues.includes(letterSpacing)
+		) {
+			return +letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * scaling + letterSpacing.match(/([^0-9.])+/)[0];
+		} else if (isNumberWith('%')) {
+			return (scaling * fontSize * (+letterSpacing.replace('%', '') / 100)) + 'px';
+		} else {
+			return 'normal';
+		}
+	},
+
 	filter: function(dest, source, exclude, prioritize) {
 		var processed;
 
@@ -622,6 +651,21 @@ statics: {
 				list[i]._index = i;
 			return removed;
 		}
+	},
+
+	insertAt: function () {
+		var args = Array.prototype.slice.call(arguments);
+		var insertArray = args.slice(2).reverse();
+		for (var i = 0; i < insertArray.length; i++) {
+			args[0].splice(args[1], 0, insertArray[i]);
+		}
+	},
+
+	splitOnLast: function (str, substring) {
+		var lastIndex = str.lastIndexOf(substring);
+		var before = str.slice(0, lastIndex);
+		var after = str.slice(lastIndex + 1);
+		return [before, after];
 	},
 
 	capitalize: function(str) {
@@ -1103,9 +1147,9 @@ var Formatter = Base.extend({
 		this.multiplier = Math.pow(10, this.precision);
 	},
 
-	number: function(val) {
+	number: function(num) {
 		return this.precision < 16
-				? Math.round(val * this.multiplier) / this.multiplier : val;
+				? Math.round(num * this.multiplier) / this.multiplier : num;
 	},
 
 	pair: function(val1, val2, separator) {
@@ -4648,9 +4692,14 @@ new function() {
 	}
 }), {
 
+	_applyLetterSpacing: function(el, scaling) {
+		el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling)
+	},
+
 	_setStyles: function(ctx, param, viewMatrix) {
 		var style = this._style,
 			matrix = this._matrix;
+		this._applyLetterSpacing(ctx.canvas);
 		if (style.hasFill()) {
 			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
 		}
@@ -11649,6 +11698,589 @@ var PointText = TextItem.extend({
 	}
 });
 
+var AreaText = TextItem.extend( {
+	_class: 'AreaText',
+	_htmlElement: 'input',
+	_htmlParentId: 'area-text-parent',
+	_allowedElements: ['input', 'textarea'],
+	_htmlId: 'area-text',
+	_outsideClickId: null,
+	_boundsGenerators: ['auto-height', 'auto-width'],
+	_editModeListeners: null,
+	_editModeChangeListeners: null,
+	_textTransform: 'initial',
+	_lastCharCode: '',
+
+	_serializeFields: {
+		textTransform: null,
+		justification: null,
+		boundsGenerator: null,
+		lines: [],
+		width: null,
+		height: null,
+	},
+
+	initialize: function AreaText () {
+		this._anchor = [0,0];
+		this._needsWrap = false;
+		this._editMode = false;
+		this._htmlElement = 'textarea';
+		this._rectangle = new Rectangle(0, 0, 1, 1);
+		var lines = arguments[0] && arguments[0].lines ?  arguments[0].lines : [];
+
+		if (arguments[0] && arguments[0].boundsGenerator) {
+			this._boundsGenerator = arguments[0].boundsGenerator;
+			delete arguments[0].boundsGenerator;
+		} else {
+			this._boundsGenerator = 'auto-width';
+		}
+
+		if (arguments[0] && arguments[0].lines) {
+			delete arguments[0].lines;
+		}
+
+		TextItem.apply(this, arguments);
+		this._htmlId += UID.get(this._htmlId);
+		if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
+			this.setRectangle(arguments[0]);
+		}
+
+		if (arguments[0] && arguments[0].height) {
+			this.setHeight(arguments[0].height);
+		}
+
+		if (arguments[0] && arguments[0].width) {
+			this.setWidth(arguments[0].width);
+		}
+
+		if (arguments[0] && arguments[0].matrix) {
+			this._rectangle.x = arguments[0].matrix[4];
+			this._rectangle.y = arguments[0].matrix[5];
+		}
+
+		this._lines = lines;
+	},
+
+	_addListener: function (listener, name) {
+		if (typeof listener !== 'function') {
+			throw new Error('Argument is not a function');
+		}
+		var id = UID.get();
+		var self = this;
+		if (!this[name]) {
+			this[name] = [];
+		}
+		this[name].push({ id: id, listener: listener });
+		return function () {
+			self[name] = self[name].filter(function (listener) {
+				return listener.id !== id;
+			});
+		};
+	},
+
+	addEditModeListener: function (listener) {
+	  return this._addListener(listener, '_editModeListeners');
+	},
+
+	addModeChangeListener: function (listener) {
+		return this._addListener(listener, '_editModeChangeListeners');
+	},
+
+	getLines: function () {
+		return this._lines;
+	},
+
+	setLines: function (lines) {
+		this._lines = lines;
+	},
+
+	getEditMode: function () {
+		return this._editMode;
+	},
+
+	setEditMode: function (bool) {
+		this._changeMode(bool);
+	},
+
+	getTextTransform: function () {
+		return this._textTransform;
+	},
+
+	setTextTransform: function () {
+		this._textTransform = arguments[0];
+		this.setContent(this._content);
+		this._redraw();
+	},
+
+	getHtmlId: function () {
+		return this._htmlId;
+	},
+
+	getRectangle: function () {
+		return this._rectangle;
+	},
+
+	getBoundsGenerator: function () {
+		return this._boundsGenerator;
+	},
+
+	setBoundsGenerator: function (generator) {
+		if (this._boundsGenerators.indexOf(generator) === -1) {
+			throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
+		}
+
+		this._boundsGenerator = generator;
+		if (generator === 'auto-width') {
+			this._htmlElement = 'input';
+		} else {
+			this._htmlElement = 'textarea';
+		}
+
+		this._changed(undefined);
+		this._wrap(this.view.context);
+	},
+
+	getContent: function () {
+	  return this._content;
+	},
+
+	setContent: function (content) {
+		if (this._textTransform === 'uppercase') {
+			content = content.toUpperCase();
+		} else if (this._textTransform === 'lowercase') {
+			content = content.toLowerCase();
+		} else if (this._textTransform === 'capitalize') {
+			content = Base.capitalize(content);
+		}
+		this._content = '' + content;
+		this._needsWrap = true;
+		this._changed(521);
+	},
+
+	getEditElement: function () {
+	  return this._htmlElement;
+	},
+
+	getJustification: function () {
+		return this._style.justification;
+	},
+
+	setJustification: function () {
+		this._style.justification = arguments[0];
+		this._updateAnchor();
+	},
+
+	getSpacing: function () {
+		return this._style.letterSpacing;
+	},
+
+	setSpacing: function (letterSpacing) {
+		this._style.letterSpacing = letterSpacing;
+		this._redraw();
+	},
+
+	getFontWeight: function () {
+		return this._style.fontWeight;
+	},
+
+	setFontWeight: function () {
+		this._style.fontWeight = arguments[0];
+		this._redraw();
+	},
+
+	_redraw: function() {
+		this._needsWrap = true;
+		if (this._oldParams) {
+			this.draw(this.view.context, this._oldParams, this._oldViewMatrix);
+		}
+	},
+
+	getHeight: function () {
+		return this._rectangle.height;
+	},
+
+	setHeight: function () {
+		this._rectangle.height = arguments[0];
+		this._updateAnchor();
+		this._changed(9);
+	},
+
+	getWidth: function () {
+		return this._rectangle.width;
+	},
+
+	setWidth: function () {
+		this._rectangle.width = arguments[0];
+		this._updateAnchor();
+		this._changed(9);
+	},
+
+	setRectangle: function () {
+		var rectangle = Rectangle.read(arguments);
+		this._rectangle = rectangle;
+
+		this.translate(rectangle.topLeft.subtract(this._matrix.getTranslation()));
+		this._updateAnchor();
+		if (arguments.length > 1 && typeof arguments[1] === 'boolean' && arguments[1]) {
+			this._needsWrap = arguments[1];
+		} else {
+			this._needsWrap = true;
+		}
+		this._changed(9);
+	},
+
+	_changeMode: function (mode) {
+		mode = !!mode;
+		for (var i = 0; Array.isArray(this._editModeChangeListeners) && i < this._editModeChangeListeners.length; i++) {
+			this._editModeChangeListeners[i].listener(mode);
+		}
+
+		this._editMode = mode || !this.editMode;
+		if (this._editMode) {
+			this._setEditMode();
+		} else {
+			this._setNormalMode();
+		}
+	},
+
+	_containerStyles: function (container) {
+		var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
+		container.style.position = 'absolute';
+		container.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
+		container.style.height = this.leading * this.viewMatrix.scaling.y + 'px';
+		container.style.left = canvasBoundingBox.left +  this.viewMatrix._tx + 'px';
+		container.style.top = canvasBoundingBox.top + this.viewMatrix._ty + 'px';
+		container.style.maxHeight = this.view.getViewSize().height + 'px';
+	},
+
+	_containerStylesAutoHeight: function (container) {
+		container.style.height = '100%';
+		this._containerStyles(container);
+	},
+
+	_containerStylesAutoWidth: function (container) {
+		this._containerStyles(container);
+		container.style.width = 'auto';
+		container.style.whiteSpace = 'nowrap';
+	},
+
+	_elementStyles: function (element) {
+		var scaling = this.scaling.y * this.viewMatrix.scaling.y;
+		element.style.color = this._style.fillColor.toCSS(true);
+		element.style.textTransform = this._textTransform;
+		element.style.opacity = this.opacity;
+		element.style.fontFamily = this._style.fontFamily;
+		element.style.fontSize = this._style.fontSize * scaling + 'px';
+		this._applyLetterSpacing(element, scaling);
+
+		element.style.fontWeight = this.fontWeight;
+		element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
+		element.style.transformOrigin = 'top left';
+		element.style.transform = 'rotate(' + this.rotation + 'deg)';
+		element.style.width = '100%';
+		element.style.resize = 'none';
+		element.style.border = 'none';
+		element.style.margin = '0';
+		element.style.padding = '0';
+		element.style.outline = '0';
+		element.style.boxSizing = 'border-box';
+		element.style.backgroundColor = 'transparent';
+		element.style.overflow = 'hidden';
+		element.style.wordWrap = 'break-word';
+		element.style.height = '100%';
+	},
+
+	_elementStylesAutoHeight: function (element) {
+		this._elementStyles(element);
+		element.style.height = this.rectangle.height * this.viewMatrix.scaling.y + 'px';
+	},
+
+	_elementStylesAutoWidth: function (element) {
+		this._elementStyles(element);
+		element.setAttribute('autocomplete', 'off');
+		element.style.position = 'absolute';
+	},
+
+	_divStyles: function (div) {
+		var scaling = this.scaling.y * this.viewMatrix.scaling.y;
+		div.style.fontFamily = this._style.fontFamily;
+		div.style.fontSize = this._style.fontSize * scaling + 'px';
+		div.style.fontWeight = this.fontWeight;
+		this._applyLetterSpacing(div);
+		div.style.textTransform = this._textTransform;
+		div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
+		div.style.visibility = 'hidden';
+		div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
+		div.style.wordWrap = 'break-word';
+	},
+
+	_divStylesAutoHeight: function (div) {
+		this._divStyles(div);
+	},
+
+	_divStylesAutoWidth: function (div) {
+		this._divStyles(div);
+		div.style.wordWrap = 'initial';
+		div.style.display = 'inline-block';
+		div.style.width = 'fit-content';
+	},
+
+	_setElementStyles: function (element) {
+		var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+		this['_elementStyles' + strategy](element);
+	},
+
+	_setContainerStyles: function (container) {
+		var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+		this['_containerStyles' + strategy](container);
+	},
+
+	_setDivStyles: function (div) {
+		var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+		this['_divStyles' + strategy](div);
+	},
+
+	_setEditAutoHeight: function (self, element, div) {
+		function autoHeight(event) {
+			var calcLines = self._calculateLines(self.view.context, element.value);
+			element.value = calcLines.join('\n');
+			div.innerHTML = calcLines
+				.join("<br/>")
+				.replace(/\s/g, '&nbsp;');
+			var heightSetter;
+			if ((event && event.inputType === 'insertLineBreak')) {
+				heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
+				element.value += '\n';
+			} else {
+				heightSetter = div.scrollHeight;
+			}
+			element.style.height = heightSetter + 'px';
+			self.setHeight(heightSetter / self.viewMatrix.scaling.y);
+		}
+
+		autoHeight();
+		element.addEventListener('input', autoHeight);
+	},
+
+	_setEditAutoWidth: function (self, element, div) {
+		function autoWidth() {
+			div.innerHTML = element.value.replace(/\s/g, '&nbsp;');
+			self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
+		}
+
+		autoWidth();
+		element.addEventListener('input', autoWidth);
+	},
+
+	_setEditElementDOM: function (container) {
+		var childElement = document.createElement('div');
+		container.style.overflow = 'hidden';
+		container.style.position = 'fixed';
+		container.style.top = 0 + '';
+		container.style.left = 0 + '';
+		container.style.width = 0 + '';
+		container.style.height = 0 + '';
+
+		var wrapper = document.createElement('div');
+		wrapper.style.pointerEvents = 'auto';
+		wrapper.style.position = 'fixed';
+
+		wrapper.appendChild(childElement);
+		container.appendChild(wrapper);
+
+		document.body.appendChild(container);
+		container.classList.add('area-text');
+
+		var element = document.createElement(this._htmlElement);
+		element.id = this._htmlId;
+		element.classList.add('area-text-input');
+
+		childElement.appendChild(element);
+		this._setContainerStyles(childElement);
+		this._setElementStyles(element);
+
+		var div = document.createElement('div');
+		childElement.appendChild(div);
+		this._setDivStyles(div);
+
+		element.value = '' + this._content;
+		var self = this;
+		element.addEventListener('keydown', function (event) {
+			if (event.target.value.endsWith(". ") && event.code === 'Space' && self._lastCharCode === 'Space') {
+				event.target.value = event.target.value.replace(new RegExp(". " + "$"), "  ");
+			}
+			self._lastCharCode = event.code;
+		});
+
+		if (this._boundsGenerator === 'auto-height') {
+		   this._setEditAutoHeight(this, element, div);
+		} else if (this._boundsGenerator === 'auto-width') {
+			this._setEditAutoWidth(this, element, div);
+		}
+		element.addEventListener('input', function (e) {
+			for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
+				self._editModeListeners[i].listener(e);
+			}
+		});
+	},
+
+	_setEditMode: function () {
+		var element =  document.getElementById(this._htmlParentId);
+		if (!element) {
+			element = document.createElement('div');
+			element.id = this._htmlParentId;
+		}
+		this._setEditElementDOM(element);
+		this.setContent('');
+	},
+
+	_setNormalMode: function () {
+		var element = document.getElementById(this._htmlParentId);
+		this.setContent( element.querySelector('#' + this._htmlId).value );
+		element.remove();
+	},
+
+	_onDoubleClick: function () {
+		this.on('doubleclick', this._changeMode);
+	},
+
+	_calculateLines: function (ctx, content) {
+		var self = this;
+		function calcLines(lines, i) {
+			var newSubStr = '';
+			while (ctx.measureText(lines[i]).width > self.rectangle.width) {
+				newSubStr += lines[i].split('').pop();
+				lines[i] = lines[i].slice(0, -1);
+			}
+
+			if (newSubStr !== '') {
+				Base.insertAt(lines, i + 1, newSubStr.split('').reverse().join(''));
+			}
+		}
+
+		var contentLines = content.split('\n');
+		var lines = [];
+		for (var i = 0; i < contentLines.length || i < lines.length; ++i) {
+			var currentLine = i < contentLines.length ? contentLines[i] : lines[i];
+			if (!currentLine || typeof currentLine !== 'string') {
+				break;
+			}
+
+			if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.indexOf(' ') !== -1) {
+				var str = Base.splitOnLast(currentLine, ' ');
+				if (str[0] === currentLine.slice(-1)) {
+					str = Base.splitOnLast(currentLine.slice(-1), ' ');
+				}
+				lines.push(str[0], str[1]);
+			} else {
+				lines.push(contentLines[i]);
+			}
+			calcLines(lines, i);
+		}
+
+		contentLines = lines.filter(function (s) { return !!s; });
+		return contentLines;
+	},
+
+	_wrap: function (ctx) {
+		this._lines = [];
+
+		if (this._boundsGenerator === 'auto-width') {
+			this._lines.push(this.content.replace('\n', ''));
+			var width = ctx.measureText(this._lines[0]).width;
+			ctx.font = this.style.getFontStyle();
+			ctx.textAlign = this.style.getJustification();
+			this.setWidth(width);
+			this.setHeight(this.getStyle().leading);
+			return;
+		}
+
+		this._lines = this._calculateLines(ctx, this.content);
+		var height = (this.getStyle().leading) * (this._lines.length );
+		this.setHeight(height);
+	},
+
+	_updateAnchor: function () {
+		var justification = this._style.getJustification(),
+			rectangle = this.getRectangle(),
+			anchor = new Point(0, this._style.getFontSize());
+
+		if (justification === 'center') {
+			anchor = anchor.add([rectangle.width / 2, 0]);
+		} else if (justification === 'right') {
+			anchor = anchor.add([rectangle.width, 0]);
+		}
+
+		this._anchor = anchor;
+	},
+
+	_getAnchor: function () {
+		return this._anchor;
+	},
+
+	_oldViewMatrix: null,
+	_oldParams: null,
+
+	_draw: function (ctx, params, viewMatrix) {
+		if (!this._content) {
+			return;
+		}
+
+		this._setStyles(ctx, params, viewMatrix);
+		this._oldParams = params;
+		this._oldViewMatrix = viewMatrix;
+
+		var style = this._style,
+			hasFill = style.hasFill(),
+			hasStoke = style.hasStroke(),
+			rectangle = this.rectangle,
+			anchor = this._getAnchor(),
+			leading = style.getLeading(),
+			shadowColor = ctx.shadowColor;
+
+		ctx.font = style.getFontStyle();
+		ctx.textAlign = style.getJustification();
+
+		if (this._needsWrap) {
+			this._wrap(ctx);
+			this._needsWrap = false;
+		}
+
+		var lines = this._lines;
+
+		for (var i = 0, l = lines.length; i < l; i++) {
+			if (i * leading > rectangle.height && this._boundsGenerator === 'auto-height') {
+				return;
+			}
+
+			ctx.shadowColor = shadowColor;
+			var line = lines[i];
+
+			if (hasFill) {
+				ctx.fillText(line, anchor.x, anchor.y);
+				ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+			}
+
+			if (hasStoke) {
+				ctx.strokeText(line, anchor.x, anchor.y);
+			}
+
+			ctx.translate(0, leading);
+		}
+	},
+
+	_getBounds: function (matrix, options) {
+		var bounds = new Rectangle(
+			0, 0,
+			this.rectangle.width,
+			this.rectangle.height
+		);
+
+		return matrix ? matrix._transformBounds(bounds) : bounds;
+	},
+
+});
+
 var Color = Base.extend(new function() {
 	var types = {
 		gray: ['gray'],
@@ -12423,6 +13055,7 @@ var Style = Base.extend(new function() {
 		fontWeight: 'normal',
 		fontSize: 12,
 		leading: null,
+		letterSpacing: 'normal',
 		justification: 'left'
 	}),
 	textDefaults = Base.set({}, groupDefaults, {
@@ -12439,7 +13072,8 @@ var Style = Base.extend(new function() {
 		fontSize: 9,
 		font: 9,
 		leading: 9,
-		justification: 9
+		justification: 9,
+		letterSpacing: 9,
 	},
 	item = {
 		beans: true
@@ -12638,7 +13272,7 @@ var Style = Base.extend(new function() {
 		if (/pt|em|%|px/.test(fontSize))
 			fontSize = this.getView().getPixelSize(fontSize);
 		return leading != null ? leading : fontSize * 1.2;
-	}
+	},
 
 });
 
@@ -14704,6 +15338,7 @@ var SvgStyles = Base.each({
 	dashOffset: ['stroke-dashoffset', 'number'],
 	fontFamily: ['font-family', 'string'],
 	fontWeight: ['font-weight', 'string'],
+	letterSpacing: ['letter-spacing', 'spacing'],
 	fontSize: ['font-size', 'number'],
 	justification: ['text-anchor', 'lookup', {
 		left: 'start',
@@ -14961,6 +15596,38 @@ new function() {
 		return node;
 	}
 
+	function exportAreaText(item) {
+		var attribs = getTransform(item._matrix, true);
+		var size = item.bounds.size;
+		attribs.width = size.width;
+		attribs.height = size.height;
+
+		var x1 = attribs.x + -0.025 * item.fontSize;
+		var y1 = attribs.y + attribs.height + item.fontSize - size.height + 0.5;
+
+		delete attribs.y;
+		delete attribs.x;
+		var node = SvgElement.create('text', attribs,
+			formatter);
+		delete attribs.width;
+		delete attribs.height;
+		delete attribs.generator;
+		delete attribs.dy;
+		delete attribs.dx;
+
+		attribs.x = x1;
+		attribs.y = y1;
+
+		for (var i = 0; i < item.lines.length; i++) {
+			var tspan = SvgElement.create('tspan', attribs, formatter);
+			tspan.textContent = item.lines[i];
+			attribs.y += item._style.leading;
+			node.appendChild(tspan);
+		}
+
+		return node;
+	}
+
 	var exporters = {
 		Group: exportGroup,
 		Layer: exportGroup,
@@ -14969,7 +15636,8 @@ new function() {
 		Shape: exportShape,
 		CompoundPath: exportCompoundPath,
 		SymbolItem: exportSymbolItem,
-		PointText: exportText
+		PointText: exportText,
+		AreaText: exportAreaText,
 	};
 
 	function applyStyle(item, node, isRoot) {
@@ -14994,6 +15662,8 @@ new function() {
 				}
 				if (type === 'style') {
 					style.push(entry.attribute + ': ' + value);
+				} else if (type === 'spacing') {
+					attrs[entry.attribute] = Base.calculateLetterSpacing(value, item[SvgStyles.fontSize.get]())
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
 							: type === 'color' ? value.gradient
@@ -15340,9 +16010,41 @@ new function() {
 		},
 
 		text: function(node) {
-			var text = new PointText(getPoint(node).add(
+			var text;
+			if (node.getElementsByTagName('tspan').length > 0) {
+				var point = getPoint(node);
+				var size = getSize(node);
+
+				if (size.isZero()) {
+					var svgRect = node.getBoundingClientRect();
+					size = size.add(new paper.Size(svgRect.width, svgRect.height));
+				}
+
+				var content = '';
+				var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
+
+				for (var i = 0; i < nodeElements.length; i++) {
+					content += nodeElements[i].textContent.trim() + '\n';
+					size = size.add(getSize(nodeElements[i]));
+				}
+
+				if (Boolean(getAttribute(node, 'transform'))) {
+					text = new AreaText(new Rectangle(new Point(0, 0), size));
+				} else {
+					point = point.add(getPoint(nodeElements[0]));
+					text = new AreaText(new Rectangle(point, size));
+
+					text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
+				}
+				text.setContent(node.textContent.trim() || '');
+				if (nodeElements.length > 1) {
+					text.boundsGenerator = 'auto-height';
+				}
+			} else {
+				text = new PointText(getPoint(node).add(
 					getPoint(node, 'dx', 'dy')));
-			text.setContent(node.textContent.trim() || '');
+				text.setContent(node.textContent.trim() || '');
+			}
 			return text;
 		},
 
@@ -15498,7 +16200,7 @@ new function() {
 		if (!value && node.style) {
 			var style = Base.camelize(name);
 			value = node.style[style];
-			if (!value && styles.node[style] !== styles.parent[style])
+			if (!value && styles && styles.node[style] !== styles.parent[style])
 				value = styles.node[style];
 		}
 		return !value ? undefined

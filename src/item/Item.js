@@ -4321,6 +4321,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * the specified type}
      */
 
+    _applyLetterSpacing: function(el, scaling) {
+        el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling);
+    },
+
     /**
      * Private method that sets Path related styles on the canvas context.
      * Not defined in Path as it is required by other classes too,
@@ -4331,6 +4335,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // items without children, where styles would be merged.
         var style = this._style,
             matrix = this._matrix;
+        this._applyLetterSpacing(ctx.canvas);
         if (style.hasFill()) {
             ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
         }

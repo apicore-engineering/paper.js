@@ -322,6 +322,7 @@ new function() {
                     size = size.add(getSize(nodeElements[i]));
                 }
 
+                // Figma Import lacks x,y attributes. Transform is applied automatically in the core of Item class
                 if (Boolean(getAttribute(node, 'transform'))) {
                     text = new AreaText(new Rectangle(new Point(0, 0), size));
                 } else {
