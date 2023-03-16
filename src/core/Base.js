@@ -394,7 +394,7 @@ statics: /** @lends Base */{
             isNumberWith('rem') || 
             letterSpacingGlobalValues.includes(letterSpacing)
         ) {
-            return +letterSpacing.match(/\d+/)[0] * scaling + letterSpacing.match(/[^0-9]+/);
+            return +letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * scaling + letterSpacing.match(/([^0-9.])+/)[0];
         } else if (isNumberWith('%')) {
             return (scaling * fontSize * (+letterSpacing.replace('%', '') / 100)) + 'px';
         } else {
