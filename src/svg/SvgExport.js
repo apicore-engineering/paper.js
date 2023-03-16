@@ -335,6 +335,8 @@ new function() {
                 }
                 if (type === 'style') {
                     style.push(entry.attribute + ': ' + value);
+                } else if (type === 'spacing') {
+                    attrs[entry.attribute] = Base.calculateLetterSpacing(value, item[SvgStyles.fontSize.get]())
                 } else {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
