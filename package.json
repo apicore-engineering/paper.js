@@ -21,6 +21,7 @@
     "dist": "gulp dist",
     "zip": "gulp zip",
     "watch": "gulp watch",
+    "docs:ts": "gulp docs:typescript",
     "docs": "gulp docs",
     "publish": "gulp publish",
     "load": "gulp load",
