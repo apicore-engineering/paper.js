@@ -4322,6 +4322,9 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     _applyLetterSpacing: function(el, scaling, origFontSize) {
+        if (!this.letterSpacing) {
+            return;
+        }
         el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling, origFontSize);
     },
 
@@ -4335,7 +4338,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // items without children, where styles would be merged.
         var style = this._style,
             matrix = this._matrix;
-        this._applyLetterSpacing(ctx.canvas);
+        this._applyLetterSpacing(ctx.canvas, ctx.canvas.clientWidth / ctx.canvas.width);
         if (style.hasFill()) {
             ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
         }

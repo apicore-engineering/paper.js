@@ -400,11 +400,11 @@ statics: /** @lends Base */{
         } else if (letterSpacingGlobalValues.indexOf(letterSpacing) !== -1) {
             return letterSpacing;
         } else if (isNumberWith('rem')) {
-            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * 16 / origFontSize))) + 'px';
+            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+(.[0-9]+)?/)[0] * 16 / origFontSize))) + 'px';
         } else if (isNumberWith('px')) {
-            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] / origFontSize))) + 'px';
+            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+(.[0-9]+)?/)[0] / origFontSize))) + 'px';
         } else if (isNumberWith('em')) {
-            return (scaling * fontSize * (+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0])) + 'px';
+            return (scaling * fontSize * (+letterSpacing.match(/[0-9]+(.[0-9]+)?/)[0])) + 'px';
         } else if (isNumberWith('%')) {
             return (scaling * fontSize * (+letterSpacing.replace('%', '') / 100)) + 'px';
         } else {
