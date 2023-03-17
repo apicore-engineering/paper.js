@@ -388,7 +388,7 @@ statics: /** @lends Base */{
 
         var letterSpacingGlobalValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
         function isNumberWith(val) {
-            return Base.endsWith(letterSpacing, val) ||  !isNaN(+letterSpacing.replace(val, ''));
+            return Base.endsWith(letterSpacing, val) && !isNaN(+letterSpacing.replace(val, ''));
         }
 
         if (!letterSpacing) {
