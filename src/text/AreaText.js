@@ -32,7 +32,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _editModeChangeListeners: null,
     _textTransform: 'initial',
     _lastCharCode: '',
-    _spaceSeparators: ['&#32;'],
+    _spaceSeparators: ['&nbsp;'],
 
     _serializeFields: {
         textTransform: null,
