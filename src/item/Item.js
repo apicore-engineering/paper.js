@@ -4321,8 +4321,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * the specified type}
      */
 
-    _applyLetterSpacing: function(el, scaling) {
-        el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling);
+    _applyLetterSpacing: function(el, scaling, origFontSize) {
+        el.style.letterSpacing = Base.calculateLetterSpacing(this.letterSpacing, this.style.fontSize, scaling, origFontSize);
     },
 
     /**

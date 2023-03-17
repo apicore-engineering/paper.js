@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 10 09:21:20 2023 +0100
+ * Date: Thu Mar 16 17:02:03 2023 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -22,7 +22,7 @@ declare namespace paper {
     type BooleanCallback = (b: boolean) => void
     type AnyCallback = (a: any) => void
     type LetterSpacingLiterals = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset' | 'normal'
-    type TextLetterSpacing = string | LetterSpacingLiterals
+    type TextLetterSpacing = string | LetterSpacingLiterals | number
 
 
     type PointLike = (

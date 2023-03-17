@@ -32,6 +32,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _editModeChangeListeners: null,
     _textTransform: 'initial',
     _lastCharCode: '',
+    _spaceSeparators: ['&#32;'],
 
     _serializeFields: {
         textTransform: null,
@@ -371,7 +372,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
         // element.style.letterSpacing = this.spacing;
-        this._applyLetterSpacing(element, scaling);
+        this._applyLetterSpacing(element, this.scaling.x * this.viewMatrix.scaling.x, this._style.fontSize);
 
         element.style.fontWeight = this.fontWeight;
         element.style.lineHeight = '' + (this._style.leading ) / this.style.fontSize;
@@ -406,7 +407,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize * scaling + 'px';
         div.style.fontWeight = this.fontWeight;
-        this._applyLetterSpacing(div, scaling);
+        this._applyLetterSpacing(div, this.scaling.x * this.viewMatrix.scaling.x, this._style.fontSize);
         div.style.textTransform = this._textTransform;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
@@ -446,7 +447,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             element.value = calcLines.join('\n');
             div.innerHTML = calcLines
                 .join("<br/>")
-                .replace(/\s/g, '&nbsp;');
+                .replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
             var heightSetter;
             if ((event && event.inputType === 'insertLineBreak')) {
                 heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
@@ -467,7 +468,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditAutoWidth: function (self, element, div) {
         function autoWidth() {
-            div.innerHTML = element.value.replace(/\s/g, '&nbsp;');
+            div.innerHTML = element.value.replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
             self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 

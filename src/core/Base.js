@@ -377,10 +377,15 @@ statics: /** @lends Base */{
         return str.indexOf(substr, str.length - substr.length) >= 0;
     },
 
-    calculateLetterSpacing: function(letterSpacing, fontSize, scaling) {
+    calculateLetterSpacing: function(letterSpacing, fontSize, scaling, origFontSize) {
         if (!scaling) {
             scaling = 1;
         }
+
+        if (!origFontSize) {
+            origFontSize = fontSize;
+        }
+
         var letterSpacingGlobalValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset'];
         function isNumberWith(val) {
             return Base.endsWith(letterSpacing, val) ||  !isNaN(+letterSpacing.replace(val, ''));
@@ -391,15 +396,15 @@ statics: /** @lends Base */{
         }
 
         if (!isNaN(+letterSpacing)) {
-            return scaling * fontSize * letterSpacing;
+            return scaling * fontSize * letterSpacing / origFontSize + 'px';
         } else if (letterSpacingGlobalValues.indexOf(letterSpacing) !== -1) {
             return letterSpacing;
-        } else if (
-            isNumberWith('px') || 
-            isNumberWith('em') || 
-            isNumberWith('rem')
-        ) {
-            return +letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * scaling + letterSpacing.match(/([^0-9.])+/)[0];
+        } else if (isNumberWith('rem')) {
+            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] * 16 / origFontSize))) + 'px';
+        } else if (isNumberWith('px')) {
+            return (scaling * fontSize * ((+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0] / origFontSize))) + 'px';
+        } else if (isNumberWith('em')) {
+            return (scaling * fontSize * (+letterSpacing.match(/[0-9]+((.[0-9]+))?/)[0])) + 'px';
         } else if (isNumberWith('%')) {
             return (scaling * fontSize * (+letterSpacing.replace('%', '') / 100)) + 'px';
         } else {
