@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.17 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.17-15-create-auto-boundsgenerator-mode - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,13 +9,13 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 16 17:02:03 2023 +0100
+ * Date: Fri Mar 17 22:41:13 2023 +0100
  *
  * This is an auto-generated type definition.
  */
 
 declare namespace paper {
-    type BoundsGenerator = 'auto-height' | 'auto-width'
+    type BoundsGenerator = 'auto-height' | 'auto-width' | 'auto'
     type TextTransform = 'initial' | 'uppercase' | 'lowercase' | 'capitalize'
     type TextJustification = 'left' | 'right' | 'center'
     type EventCallback = (e: KeyboardEvent) => void
@@ -104,6 +104,11 @@ declare namespace paper {
          * Amount of space between elements in the row
          */
         spacing: TextLetterSpacing
+
+        /** 
+         * Returns available bounds generators for the area-text
+         */
+        static readonly boundsGenerators: BoundsGenerator[]
 
 
         /** 

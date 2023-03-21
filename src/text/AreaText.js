@@ -23,16 +23,12 @@
 var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _class: 'AreaText',
     _htmlElement: 'input',
-    _htmlParentId: 'area-text-parent',
-    _allowedElements: ['input', 'textarea'],
     _htmlId: 'area-text',
     _outsideClickId: null,
-    _boundsGenerators: ['auto-height', 'auto-width'],
     _editModeListeners: null,
     _editModeChangeListeners: null,
     _textTransform: 'initial',
     _lastCharCode: '',
-    _spaceSeparators: ['&nbsp;'],
 
     _serializeFields: {
         textTransform: null,
@@ -72,8 +68,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._boundsGenerator = arguments[0].boundsGenerator;
             delete arguments[0].boundsGenerator;
         } else {
-            this._boundsGenerator = 'auto-width';
+            this._boundsGenerator = 'auto';
         }
+
+        console.log(this._boundsGenerator);
 
         if (arguments[0] && arguments[0].lines) {
             delete arguments[0].lines;
@@ -81,7 +79,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         TextItem.apply(this, arguments);
         this._htmlId += UID.get(this._htmlId);
-        
+
         if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
             this.setRectangle(arguments[0]);
         }
@@ -163,7 +161,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * ( In edit mode input for the current is being active )
      *
      * @bean
-     * @type {Boolean}
+     * @type {TextTransform}
      */
     getTextTransform: function () {
         return this._textTransform;
@@ -202,18 +200,19 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setBoundsGenerator: function (generator) {
-        if (this._boundsGenerators.indexOf(generator) === -1) {
-            throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
+        if (AreaText.boundsGenerators.indexOf(generator) === -1) {
+            throw new Error('Generator ' + generator + ' is not included in ' + AreaText.boundsGenerators.toString());
         }
 
         this._boundsGenerator = generator;
         if (generator === 'auto-width') {
-            this._htmlElement = 'input';
+            this._htmlElement = AreaText._allowedElements.input;
         } else {
-            this._htmlElement = 'textarea';
+            this._htmlElement = AreaText._allowedElements.textArea;
         }
 
 
+        console.log(this._boundsGenerator);
         this._changed(/*#=*/Change.APPEARANCE);
         this._wrap(this.view.context);
     },
@@ -364,6 +363,13 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.whiteSpace = 'nowrap';
     },
 
+    _containerStylesAuto: function (container) {
+        this._containerStyles(container);
+        container.style.height = '100%';
+        container.style.width = 'auto';
+        container.style.whiteSpace = 'nowrap';
+    },
+
     _elementStyles: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.color = this._style.fillColor.toCSS(true);
@@ -371,7 +377,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
-        // element.style.letterSpacing = this.spacing;
         this._applyLetterSpacing(element, this.scaling.x * this.viewMatrix.scaling.x, this._style.fontSize);
 
         element.style.fontWeight = this.fontWeight;
@@ -389,6 +394,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.overflow = 'hidden';
         element.style.wordWrap = 'break-word';
         element.style.height = '100%';
+    },
+
+    _elementStylesAuto: function (element) {
+        this._elementStylesAutoHeight(element);
+        element.setAttribute('autocomplete', 'off');
+        element.style.position = 'absolute';
     },
 
     _elementStylesAutoHeight: function (element) {
@@ -426,6 +437,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.width = 'fit-content';
     },
 
+    _divStylesAuto: function (div) {
+        this._divStylesAutoWidth(div);
+    },
+
     _setElementStyles: function (element) {
         var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
         this['_elementStyles' + strategy](element);
@@ -447,7 +462,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             element.value = calcLines.join('\n');
             div.innerHTML = calcLines
                 .join("<br/>")
-                .replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
+                .replace(/\s/g, AreaText._spaceSeparators[0]);
             var heightSetter;
             if ((event && event.inputType === 'insertLineBreak')) {
                 heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
@@ -466,9 +481,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.addEventListener('input', autoHeight);
     },
 
-    _setEditAutoWidth: function (self, element, div) {
+    _setEditAutoWidth: function (self, element, div, changeDiv) {
+        if (changeDiv) {
+            changeDiv = true;
+        }
         function autoWidth() {
-            div.innerHTML = element.value.replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
+            if (changeDiv) {
+                div.innerHTML = element.value.replace(/\s/g, AreaText._spaceSeparators[0]);
+            }
             self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
         }
 
@@ -476,6 +496,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         autoWidth();
         // input watch
         element.addEventListener('input', autoWidth);
+    },
+
+
+    _setEditAuto: function (self, element, div) {
+        self._setEditAutoHeight(self, element, div);
+        self._setEditAutoWidth(self, element, div, false);
     },
 
     _setEditElementDOM: function (container) {
@@ -523,6 +549,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
            this._setEditAutoHeight(this, element, div);
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
+        } else {
+            this._setEditAuto(this, element, div);
         }
         element.addEventListener('input', function (e) {
             for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
@@ -532,17 +560,17 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setEditMode: function () {
-        var element =  document.getElementById(this._htmlParentId);
+        var element =  document.getElementById(AreaText._htmlParentId);
         if (!element) {
             element = document.createElement('div');
-            element.id = this._htmlParentId;
+            element.id = AreaText._htmlParentId;
         }
         this._setEditElementDOM(element);
         this.setContent('');
     },
 
     _setNormalMode: function () {
-        var element = document.getElementById(this._htmlParentId);
+        var element = document.getElementById(AreaText._htmlParentId);
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
     },
@@ -657,7 +685,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
 
         for (var i = 0, l = lines.length; i < l; i++) {
-            if (i * leading > rectangle.height && this._boundsGenerator === 'auto-height') {
+            if (i * leading > rectangle.height && (this._boundsGenerator === 'auto-height' || this._boundsGenerator === 'auto')) {
                 return;
             }
 
@@ -816,4 +844,34 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @type TextLetterSpacing
      * @default 'normal'
      */
+}, {
+    statics:  /** @lends AreaText */ {
+        /**
+         * @protected
+         * @type String
+         * @readonly
+         */
+        _htmlParentId: 'area-text-parent',
+        /**
+         * @protected
+         * @type String[]
+         * @readonly
+         */
+        _spaceSeparators: ['&nbsp;'],
+        /**
+         * @protected
+         * @type Record<string, string>
+         * @readonly
+         */
+        _allowedElements: { input: 'input', textArea: 'textarea'},
+        /**
+         * Returns available bounds generators for the area-text
+         *
+         * @type BoundsGenerator[]
+         * @static
+         * @readonly
+         *
+         */
+        boundsGenerators: ['auto', 'auto-width', 'auto-height' ],
+    }
 });
