@@ -23,16 +23,15 @@
 var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _class: 'AreaText',
     _htmlElement: 'input',
-    _htmlParentId: 'area-text-parent',
-    _allowedElements: ['input', 'textarea'],
     _htmlId: 'area-text',
     _outsideClickId: null,
-    _boundsGenerators: ['auto-height', 'auto-width'],
     _editModeListeners: null,
     _editModeChangeListeners: null,
     _textTransform: 'initial',
     _lastCharCode: '',
-    _spaceSeparators: ['&nbsp;'],
+
+    _oldViewMatrix: null,
+    _oldParams: null,
 
     _serializeFields: {
         textTransform: null,
@@ -72,7 +71,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._boundsGenerator = arguments[0].boundsGenerator;
             delete arguments[0].boundsGenerator;
         } else {
-            this._boundsGenerator = 'auto-width';
+            this._boundsGenerator = 'auto';
         }
 
         if (arguments[0] && arguments[0].lines) {
@@ -81,7 +80,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
         TextItem.apply(this, arguments);
         this._htmlId += UID.get(this._htmlId);
-        
+
         if (arguments.length === 1 && arguments[0] instanceof Rectangle) {
             this.setRectangle(arguments[0]);
         }
@@ -163,7 +162,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * ( In edit mode input for the current is being active )
      *
      * @bean
-     * @type {Boolean}
+     * @type {TextTransform}
      */
     getTextTransform: function () {
         return this._textTransform;
@@ -202,15 +201,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     setBoundsGenerator: function (generator) {
-        if (this._boundsGenerators.indexOf(generator) === -1) {
-            throw new Error('Generator ' + generator + ' is not included in ' + this._boundsGenerators.toString());
+        if (AreaText.boundsGenerators.indexOf(generator) === -1) {
+            throw new Error('Generator ' + generator + ' is not included in ' + AreaText.boundsGenerators.toString());
         }
 
         this._boundsGenerator = generator;
         if (generator === 'auto-width') {
-            this._htmlElement = 'input';
+            this._htmlElement = AreaText._allowedElements.input;
         } else {
-            this._htmlElement = 'textarea';
+            this._htmlElement = AreaText._allowedElements.textArea;
         }
 
 
@@ -288,7 +287,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _redraw: function() {
         this._needsWrap = true;
         if (this._oldParams) {
-            this.draw(this.view.context, this._oldParams, this._oldViewMatrix);
+            this._draw(this.view.context, this._oldParams, this._oldViewMatrix);
         }
     },
 
@@ -364,6 +363,13 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         container.style.whiteSpace = 'nowrap';
     },
 
+    _containerStylesAuto: function (container) {
+        this._containerStyles(container);
+        container.style.height = '100%';
+        container.style.width = 'auto';
+        container.style.whiteSpace = 'nowrap';
+    },
+
     _elementStyles: function (element) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         element.style.color = this._style.fillColor.toCSS(true);
@@ -371,7 +377,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.opacity = this.opacity;
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize * scaling + 'px';
-        // element.style.letterSpacing = this.spacing;
         this._applyLetterSpacing(element, this.scaling.x * this.viewMatrix.scaling.x, this._style.fontSize);
 
         element.style.fontWeight = this.fontWeight;
@@ -389,6 +394,12 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.overflow = 'hidden';
         element.style.wordWrap = 'break-word';
         element.style.height = '100%';
+    },
+
+    _elementStylesAuto: function (element) {
+        this._elementStylesAutoHeight(element);
+        element.setAttribute('autocomplete', 'off');
+        element.style.position = 'absolute';
     },
 
     _elementStylesAutoHeight: function (element) {
@@ -417,6 +428,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _divStylesAutoHeight: function (div) {
         this._divStyles(div);
+        div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
     },
 
     _divStylesAutoWidth: function (div) {
@@ -424,6 +436,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         div.style.wordWrap = 'initial';
         div.style.display = 'inline-block';
         div.style.width = 'fit-content';
+    },
+
+    _divStylesAuto: function (div) {
+        this._divStylesAutoWidth(div);
     },
 
     _setElementStyles: function (element) {
@@ -443,15 +459,25 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditAutoHeight: function (self, element, div) {
         function autoHeight(event) {
-            var calcLines = self._calculateLines(self.view.context, element.value);
-            element.value = calcLines.join('\n');
+            var calcLines;
+            if (self._boundsGenerator === 'auto-height') {
+                var ctx = self.view.context;
+                ctx.font = self.style.getFontStyle();
+                ctx.textAlign = self.style.getJustification();
+                calcLines = self._calculateLines(ctx, element.value);
+                element.value = calcLines.join('\n');
+            } else {
+                calcLines = element.value.split('\n');
+            }
             div.innerHTML = calcLines
-                .join("<br/>")
-                .replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
+                .join("<br>")
+                .replace(/\s/g, AreaText._spaceSeparators.nonBreaking);
+            if (!div.innerHTML) {
+                div.innerHTML = AreaText._spaceSeparators.thinSpace;
+            }
             var heightSetter;
-            if ((event && event.inputType === 'insertLineBreak')) {
+            if (Base.endsWith(div.innerHTML, '<br>')) {
                 heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
-                element.value += '\n';
             } else {
                 heightSetter = div.scrollHeight;
             }
@@ -466,16 +492,28 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.addEventListener('input', autoHeight);
     },
 
-    _setEditAutoWidth: function (self, element, div) {
+    _setEditAutoWidth: function (self, element, div, changeDiv) {
+        if (typeof changeDiv === "undefined") {
+            changeDiv = true;
+        }
         function autoWidth() {
-            div.innerHTML = element.value.replace(/\s/g, AreaText.prototype._spaceSeparators[0]);
-            self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
+            if (changeDiv) {
+                div.innerHTML = element.value.replace(/\s/g, AreaText._spaceSeparators.nonBreaking);
+            }
+            var width = div.scrollWidth ? div.scrollWidth : 1;
+            self.setWidth(width / self.viewMatrix.scaling.x);
         }
 
         // initial setup
         autoWidth();
         // input watch
         element.addEventListener('input', autoWidth);
+    },
+
+
+    _setEditAuto: function (self, element, div) {
+        self._setEditAutoHeight(self, element, div);
+        self._setEditAutoWidth(self, element, div, false);
     },
 
     _setEditElementDOM: function (container) {
@@ -523,6 +561,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
            this._setEditAutoHeight(this, element, div);
         } else if (this._boundsGenerator === 'auto-width') {
             this._setEditAutoWidth(this, element, div);
+        } else {
+            this._setEditAuto(this, element, div);
         }
         element.addEventListener('input', function (e) {
             for (var i = 0; Array.isArray(self._editModeListeners) && i < self._editModeListeners.length; i++) {
@@ -532,17 +572,17 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setEditMode: function () {
-        var element =  document.getElementById(this._htmlParentId);
+        var element =  document.getElementById(AreaText._htmlParentId);
         if (!element) {
             element = document.createElement('div');
-            element.id = this._htmlParentId;
+            element.id = AreaText._htmlParentId;
         }
         this._setEditElementDOM(element);
         this.setContent('');
     },
 
     _setNormalMode: function () {
-        var element = document.getElementById(this._htmlParentId);
+        var element = document.getElementById(AreaText._htmlParentId);
         this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
     },
@@ -555,7 +595,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var self = this;
         function calcLines(lines, i) {
             var newSubStr = '';
-            while (ctx.measureText(lines[i]).width > self.rectangle.width) {
+            while (ctx.measureText(lines[i]).width > self.rectangle.width && lines[i].length > 1) {
                 newSubStr += lines[i].split('').pop();
                 lines[i] = lines[i].slice(0, -1);
             }
@@ -573,7 +613,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 break;
             }
 
-            if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.indexOf(' ') !== -1) {
+            if (ctx.measureText(currentLine).width > self.rectangle.width && currentLine.indexOf(' ') !== -1) {
                 var str = Base.splitOnLast(currentLine, ' ');
                 if (str[0] === currentLine.slice(-1)) {
                     str = Base.splitOnLast(currentLine.slice(-1), ' ');
@@ -585,14 +625,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             calcLines(lines, i);
         }
 
-        contentLines = lines.filter(function (s) { return !!s; });
+        if (contentLines[contentLines.length - 1] === '') {
+            lines.push('');
+        }
+
+        contentLines = lines.filter(function (s) { return typeof s !== 'undefined'; });
         return contentLines;
     },
 
     _wrap: function (ctx) {
         this._lines = [];
-
         if (this._boundsGenerator === 'auto-width') {
+            this._lines = [];
             this._lines.push(this.content.replace('\n', ''));
             var width = ctx.measureText(this._lines[0]).width;
             ctx.font = this.style.getFontStyle();
@@ -600,9 +644,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this.setWidth(width);
             this.setHeight(this.getStyle().leading);
             return;
+        } else if (this._boundsGenerator === 'auto-height') {
+            this._lines = this._calculateLines(ctx, this.content);
+        } else {
+            this._lines = this.content.split('\n');
+            if (!this.content) {
+                this._lines = [" "];
+            }
         }
-
-        this._lines = this._calculateLines(ctx, this.content);
+        var longest = this._lines.reduce(function (longest, current) {
+            return longest.length >= current.length ? longest : current;
+        }, "");
+        this.setWidth(ctx.measureText(longest).width);
         var height = (this.getStyle().leading) * (this._lines.length );
         this.setHeight(height);
     },
@@ -610,7 +663,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _updateAnchor: function () {
         var justification = this._style.getJustification(),
             rectangle = this.getRectangle(),
-            anchor = new Point(0, this._style.getFontSize());
+            anchor = new Point(0, this._style.fontSize);
 
         if (justification === 'center') {
             anchor = anchor.add([rectangle.width / 2, 0]);
@@ -624,9 +677,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _getAnchor: function () {
         return this._anchor;
     },
-
-    _oldViewMatrix: null,
-    _oldParams: null,
 
     _draw: function (ctx, params, viewMatrix) {
         if (!this._content) {
@@ -657,7 +707,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
 
         for (var i = 0, l = lines.length; i < l; i++) {
-            if (i * leading > rectangle.height && this._boundsGenerator === 'auto-height') {
+            if (i * leading > rectangle.height && (this._boundsGenerator === 'auto-height' || this._boundsGenerator === 'auto')) {
                 return;
             }
 
@@ -816,4 +866,34 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @type TextLetterSpacing
      * @default 'normal'
      */
+}, {
+    statics:  /** @lends AreaText */ {
+        /**
+         * @protected
+         * @type String
+         * @readonly
+         */
+        _htmlParentId: 'area-text-parent',
+        /**
+         * @protected
+         * @type Record<string, string>
+         * @readonly
+         */
+        _spaceSeparators: { nonBreaking: '&nbsp;', thinSpace: '&thinsp;' },
+        /**
+         * @protected
+         * @type Record<string, string>
+         * @readonly
+         */
+        _allowedElements: { input: 'input', textArea: 'textarea'},
+        /**
+         * Returns available bounds generators for the area-text
+         *
+         * @type BoundsGenerator[]
+         * @static
+         * @readonly
+         *
+         */
+        boundsGenerators: ['auto', 'auto-width', 'auto-height' ],
+    }
 });
