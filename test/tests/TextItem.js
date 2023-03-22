@@ -111,7 +111,10 @@ test('AreaText(boundsGenerators)', function () {
         text.editMode = true;
         var editElement = document.body.querySelector('#' + text.htmlId);
         return +editElement.parentElement.style.width.replace('px', '');
-    }, text.rectangle.width);
+
+    },
+        // 0 because its empty string, and even though its auto-height, there is initial width calc
+        0);
 
     // check height
     equals(function () {
