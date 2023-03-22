@@ -30,6 +30,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _textTransform: 'initial',
     _lastCharCode: '',
 
+    _oldViewMatrix: null,
+    _oldParams: null,
+
     _serializeFields: {
         textTransform: null,
         justification: null,
@@ -70,8 +73,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         } else {
             this._boundsGenerator = 'auto';
         }
-
-        console.log(this._boundsGenerator);
 
         if (arguments[0] && arguments[0].lines) {
             delete arguments[0].lines;
@@ -212,7 +213,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
 
-        console.log(this._boundsGenerator);
         this._changed(/*#=*/Change.APPEARANCE);
         this._wrap(this.view.context);
     },
@@ -287,7 +287,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _redraw: function() {
         this._needsWrap = true;
         if (this._oldParams) {
-            this.draw(this.view.context, this._oldParams, this._oldViewMatrix);
+            this._draw(this.view.context, this._oldParams, this._oldViewMatrix);
         }
     },
 
@@ -428,6 +428,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _divStylesAutoHeight: function (div) {
         this._divStyles(div);
+        div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
     },
 
     _divStylesAutoWidth: function (div) {
@@ -458,15 +459,25 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
 
     _setEditAutoHeight: function (self, element, div) {
         function autoHeight(event) {
-            var calcLines = self._calculateLines(self.view.context, element.value);
-            element.value = calcLines.join('\n');
+            var calcLines;
+            if (self._boundsGenerator === 'auto-height') {
+                var ctx = self.view.context;
+                ctx.font = self.style.getFontStyle();
+                ctx.textAlign = self.style.getJustification();
+                calcLines = self._calculateLines(ctx, element.value);
+                element.value = calcLines.join('\n');
+            } else {
+                calcLines = element.value.split('\n');
+            }
             div.innerHTML = calcLines
-                .join("<br/>")
-                .replace(/\s/g, AreaText._spaceSeparators[0]);
+                .join("<br>")
+                .replace(/\s/g, AreaText._spaceSeparators.nonBreaking);
+            if (!div.innerHTML) {
+                div.innerHTML = AreaText._spaceSeparators.thinSpace;
+            }
             var heightSetter;
-            if ((event && event.inputType === 'insertLineBreak')) {
+            if (Base.endsWith(div.innerHTML, '<br>')) {
                 heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
-                element.value += '\n';
             } else {
                 heightSetter = div.scrollHeight;
             }
@@ -482,14 +493,15 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setEditAutoWidth: function (self, element, div, changeDiv) {
-        if (changeDiv) {
+        if (typeof changeDiv === "undefined") {
             changeDiv = true;
         }
         function autoWidth() {
             if (changeDiv) {
-                div.innerHTML = element.value.replace(/\s/g, AreaText._spaceSeparators[0]);
+                div.innerHTML = element.value.replace(/\s/g, AreaText._spaceSeparators.nonBreaking);
             }
-            self.setWidth(div.scrollWidth / self.viewMatrix.scaling.x);
+            var width = div.scrollWidth ? div.scrollWidth : 1;
+            self.setWidth(width / self.viewMatrix.scaling.x);
         }
 
         // initial setup
@@ -583,7 +595,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         var self = this;
         function calcLines(lines, i) {
             var newSubStr = '';
-            while (ctx.measureText(lines[i]).width > self.rectangle.width) {
+            while (ctx.measureText(lines[i]).width > self.rectangle.width && lines[i].length > 1) {
                 newSubStr += lines[i].split('').pop();
                 lines[i] = lines[i].slice(0, -1);
             }
@@ -601,7 +613,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 break;
             }
 
-            if (ctx.measureText(currentLine).width > this.rectangle.width && currentLine.indexOf(' ') !== -1) {
+            if (ctx.measureText(currentLine).width > self.rectangle.width && currentLine.indexOf(' ') !== -1) {
                 var str = Base.splitOnLast(currentLine, ' ');
                 if (str[0] === currentLine.slice(-1)) {
                     str = Base.splitOnLast(currentLine.slice(-1), ' ');
@@ -613,14 +625,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             calcLines(lines, i);
         }
 
-        contentLines = lines.filter(function (s) { return !!s; });
+        if (contentLines[contentLines.length - 1] === '') {
+            lines.push('');
+        }
+
+        contentLines = lines.filter(function (s) { return typeof s !== 'undefined'; });
         return contentLines;
     },
 
     _wrap: function (ctx) {
         this._lines = [];
-
         if (this._boundsGenerator === 'auto-width') {
+            this._lines = [];
             this._lines.push(this.content.replace('\n', ''));
             var width = ctx.measureText(this._lines[0]).width;
             ctx.font = this.style.getFontStyle();
@@ -628,9 +644,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this.setWidth(width);
             this.setHeight(this.getStyle().leading);
             return;
+        } else if (this._boundsGenerator === 'auto-height') {
+            this._lines = this._calculateLines(ctx, this.content);
+        } else {
+            this._lines = this.content.split('\n');
+            if (!this.content) {
+                this._lines = [" "];
+            }
         }
-
-        this._lines = this._calculateLines(ctx, this.content);
+        var longest = this._lines.reduce(function (longest, current) {
+            return longest.length >= current.length ? longest : current;
+        }, "");
+        this.setWidth(ctx.measureText(longest).width);
         var height = (this.getStyle().leading) * (this._lines.length );
         this.setHeight(height);
     },
@@ -638,7 +663,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _updateAnchor: function () {
         var justification = this._style.getJustification(),
             rectangle = this.getRectangle(),
-            anchor = new Point(0, this._style.getFontSize());
+            anchor = new Point(0, this._style.fontSize);
 
         if (justification === 'center') {
             anchor = anchor.add([rectangle.width / 2, 0]);
@@ -652,9 +677,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _getAnchor: function () {
         return this._anchor;
     },
-
-    _oldViewMatrix: null,
-    _oldParams: null,
 
     _draw: function (ctx, params, viewMatrix) {
         if (!this._content) {
@@ -854,10 +876,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         _htmlParentId: 'area-text-parent',
         /**
          * @protected
-         * @type String[]
+         * @type Record<string, string>
          * @readonly
          */
-        _spaceSeparators: ['&nbsp;'],
+        _spaceSeparators: { nonBreaking: '&nbsp;', thinSpace: '&thinsp;' },
         /**
          * @protected
          * @type Record<string, string>
