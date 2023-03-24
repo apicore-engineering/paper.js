@@ -652,6 +652,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this.setHeight(this.getStyle().leading);
             return;
         } else if (this._boundsGenerator === 'auto-height') {
+            if (this.width === 0) {
+                this.setWidth(ctx.measureText(this.content).width);
+            }
             this._lines = this._calculateLines(ctx, this.content);
         } else {
             this._lines = this.content.split('\n');
