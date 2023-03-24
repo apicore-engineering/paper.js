@@ -27,6 +27,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _outsideClickId: null,
     _editModeListeners: null,
     _editModeChangeListeners: null,
+    _applyMatrix: true,
     _textTransform: 'initial',
     _lastCharCode: '',
 
@@ -99,6 +100,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         this._lines = lines;
+        this._applyMatrix = true;
     },
 
 
@@ -208,13 +210,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._boundsGenerator = generator;
         if (generator === 'auto-width') {
             this._htmlElement = AreaText._allowedElements.input;
+            this.content = this.content.replace(/\s/g, '');
         } else {
             this._htmlElement = AreaText._allowedElements.textArea;
         }
 
 
         this._changed(/*#=*/Change.APPEARANCE);
-        this._wrap(this.view.context);
+        this._wrap(this._getContext());
     },
 
     /**
@@ -287,7 +290,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _redraw: function() {
         this._needsWrap = true;
         if (this._oldParams) {
-            this._draw(this.view.context, this._oldParams, this._oldViewMatrix);
+            this.draw(this._getContext(), this._oldParams, this._oldViewMatrix);
         }
     },
 
@@ -457,14 +460,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this['_divStyles' + strategy](div);
     },
 
+    _getContext: function () {
+        var ctx = this.view.context;
+        ctx.font = this.style.getFontStyle();
+        ctx.textAlign = this.style.getJustification();
+        return ctx;
+    },
+
     _setEditAutoHeight: function (self, element, div) {
         function autoHeight(event) {
             var calcLines;
             if (self._boundsGenerator === 'auto-height') {
-                var ctx = self.view.context;
-                ctx.font = self.style.getFontStyle();
-                ctx.textAlign = self.style.getJustification();
-                calcLines = self._calculateLines(ctx, element.value);
+                calcLines = self._calculateLines(self._getContext(), element.value);
                 element.value = calcLines.join('\n');
             } else {
                 calcLines = element.value.split('\n');
