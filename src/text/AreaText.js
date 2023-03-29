@@ -27,7 +27,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _outsideClickId: null,
     _editModeListeners: null,
     _editModeChangeListeners: null,
-    _applyMatrix: true,
     _textTransform: 'initial',
     _lastCharCode: '',
 
@@ -100,7 +99,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
 
         this._lines = lines;
-        this._applyMatrix = true;
     },
 
 
