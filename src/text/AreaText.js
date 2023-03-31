@@ -208,13 +208,14 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._boundsGenerator = generator;
         if (generator === 'auto-width') {
             this._htmlElement = AreaText._allowedElements.input;
+            this.content = this.content.replace(/\s/g, '');
         } else {
             this._htmlElement = AreaText._allowedElements.textArea;
         }
 
 
         this._changed(/*#=*/Change.APPEARANCE);
-        this._wrap(this.view.context);
+        this._wrap(this._getContext());
     },
 
     /**
@@ -287,7 +288,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _redraw: function() {
         this._needsWrap = true;
         if (this._oldParams) {
-            this._draw(this.view.context, this._oldParams, this._oldViewMatrix);
+            this.draw(this._getContext(), this._oldParams, this._oldViewMatrix);
         }
     },
 
@@ -457,14 +458,18 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this['_divStyles' + strategy](div);
     },
 
+    _getContext: function () {
+        var ctx = this.view.context;
+        ctx.font = this.style.getFontStyle();
+        ctx.textAlign = this.style.getJustification();
+        return ctx;
+    },
+
     _setEditAutoHeight: function (self, element, div) {
         function autoHeight(event) {
             var calcLines;
             if (self._boundsGenerator === 'auto-height') {
-                var ctx = self.view.context;
-                ctx.font = self.style.getFontStyle();
-                ctx.textAlign = self.style.getJustification();
-                calcLines = self._calculateLines(ctx, element.value);
+                calcLines = self._calculateLines(self._getContext(), element.value);
                 element.value = calcLines.join('\n');
             } else {
                 calcLines = element.value.split('\n');
@@ -645,6 +650,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this.setHeight(this.getStyle().leading);
             return;
         } else if (this._boundsGenerator === 'auto-height') {
+            if (this.width === 0) {
+                this.setWidth(ctx.measureText(this.content).width);
+            }
             this._lines = this._calculateLines(ctx, this.content);
         } else {
             this._lines = this.content.split('\n');

@@ -395,7 +395,7 @@ var Style = Base.extend(new function() {
             fontSize = this.getView().getPixelSize(fontSize);
         return leading != null ? leading : fontSize * 1.2;
     },
-    
+
     // DOCS: why isn't the example code showing up?
     /**
      * Style objects don't need to be created directly. Just pass an object to
