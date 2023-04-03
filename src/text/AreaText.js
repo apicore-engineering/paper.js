@@ -644,6 +644,20 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         return contentLines;
     },
 
+    _getLongest: function (ctx) {
+        return this._lines.reduce(function (longest, current) {
+            if (longest.length > current.length) {
+                return longest;
+            } else if (longest.length < current.length) {
+                return current;
+            } else {
+                var l1 = ctx.measureText(longest).width;
+                var l2 = ctx.measureText(current).width;
+                return l1 >= l2 ? longest : current;
+            }
+        }, "");
+    },
+
     _wrap: function (ctx) {
         this._lines = [];
         if (this._boundsGenerator === 'auto-width') {
@@ -666,9 +680,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 this._lines = [" "];
             }
         }
-        var longest = this._lines.reduce(function (longest, current) {
-            return longest.length >= current.length ? longest : current;
-        }, "");
+        var longest = this._getLongest(ctx);
         this.setWidth(ctx.measureText(longest).width);
         var height = (this.getStyle().leading) * (this._lines.length );
         this.setHeight(height);
