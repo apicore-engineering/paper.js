@@ -388,6 +388,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.resize = 'none';
         element.style.border = 'none';
         element.style.margin = '0';
+        element.style.marginTop = this._getOffsetTop() + 'px';
         element.style.padding = '0';
         element.style.outline = '0';
         element.style.boxSizing = 'border-box';
@@ -414,6 +415,10 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.position = 'absolute';
     },
 
+    _getOffsetTop: function () {
+        return this._style.fontSize * this.scaling.y * this.viewMatrix.scaling.y * 0.066;
+    },
+
     _divStyles: function (div) {
         var scaling = this.scaling.y * this.viewMatrix.scaling.y;
         div.style.fontFamily = this._style.fontFamily;
@@ -422,6 +427,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         this._applyLetterSpacing(div, this.scaling.x * this.viewMatrix.scaling.x, this._style.fontSize);
         div.style.textTransform = this._textTransform;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
+        div.style.marginTop = -this._getOffsetTop() + 'px';
         div.style.visibility = 'hidden';
         div.style.width = this.rectangle.width * this.viewMatrix.scaling.x + 'px';
         div.style.wordWrap = 'break-word';
@@ -482,11 +488,11 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             }
             var heightSetter;
             if (Base.endsWith(div.innerHTML, '<br>')) {
-                heightSetter = div.scrollHeight + (self.leading * self.viewMatrix.scaling.y);
+                heightSetter = div.getBoundingClientRect().height + (self.leading * self.viewMatrix.scaling.y);
             } else {
-                heightSetter = div.scrollHeight;
+                heightSetter = div.getBoundingClientRect().height;
             }
-            element.style.height = heightSetter + 'px';
+            element.style.height = (heightSetter + self._getOffsetTop() * 2).toFixed() + 'px';
             self.setHeight(heightSetter / self.viewMatrix.scaling.y);
         }
 
@@ -638,6 +644,20 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         return contentLines;
     },
 
+    _getLongest: function (ctx) {
+        return this._lines.reduce(function (longest, current) {
+            if (longest.length > current.length) {
+                return longest;
+            } else if (longest.length < current.length) {
+                return current;
+            } else {
+                var l1 = ctx.measureText(longest).width;
+                var l2 = ctx.measureText(current).width;
+                return l1 >= l2 ? longest : current;
+            }
+        }, "");
+    },
+
     _wrap: function (ctx) {
         this._lines = [];
         if (this._boundsGenerator === 'auto-width') {
@@ -660,9 +680,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
                 this._lines = [" "];
             }
         }
-        var longest = this._lines.reduce(function (longest, current) {
-            return longest.length >= current.length ? longest : current;
-        }, "");
+        var longest = this._getLongest(ctx);
         this.setWidth(ctx.measureText(longest).width);
         var height = (this.getStyle().leading) * (this._lines.length );
         this.setHeight(height);
