@@ -333,11 +333,8 @@ new function() {
                     // adjust text position:
                     text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
                 }
-                
+
                 text.setContent(node.textContent.trim() || '');
-                if (nodeElements.length > 1) {
-                    text.boundsGenerator = 'auto-height';
-                }
             } else {
                 text = new PointText(getPoint(node).add(
                     getPoint(node, 'dx', 'dy')));
