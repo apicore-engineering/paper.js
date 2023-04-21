@@ -318,7 +318,7 @@ new function() {
                 var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
 
                 for (var i = 0; i < nodeElements.length; i++) {
-                    content += nodeElements[i].textContent.trim() + '\n';
+                    content += nodeElements[i].textContent.trim() + ((i < nodeElements.length - 1) ? '\n' : '');
                     size = size.add(getSize(nodeElements[i]));
                 }
 
@@ -334,7 +334,7 @@ new function() {
                     text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
                 }
 
-                text.setContent(node.textContent.trim() || '');
+                text.setContent(content);
             } else {
                 text = new PointText(getPoint(node).add(
                     getPoint(node, 'dx', 'dy')));
