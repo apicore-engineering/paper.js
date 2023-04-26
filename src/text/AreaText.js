@@ -316,10 +316,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * Setter for rectangle. Determines the position of the element
      */
     setRectangle: function () {
-        var rectangle = Rectangle.read(arguments);
-        this._rectangle = rectangle;
+        this._rectangle = Rectangle.read(arguments);
+        this._updatePosition(false);
 
-        this.translate(rectangle.topLeft.subtract(this._matrix.getTranslation()));
         this._updateAnchor();
         if (arguments.length > 1 && typeof arguments[1] === 'boolean' && arguments[1]) {
             this._needsWrap = arguments[1];
@@ -327,6 +326,20 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             this._needsWrap = true;
         }
         this._changed(/*#=*/Change.GEOMETRY);
+    },
+
+    _updatePosition: function(isMatrix, side) {
+        if (isMatrix) {
+            if (!side) {
+                side = 'topLeft';
+            }
+            this.translate(this._rectangle[side].subtract(this._matrix.getTranslation()));
+        } else {
+            if (!side) {
+                side = 'topCenter';
+            }
+            this.position = this._rectangle[side];
+        }
     },
 
     _changeMode: function (mode) {
