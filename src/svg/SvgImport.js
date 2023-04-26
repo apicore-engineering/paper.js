@@ -306,7 +306,16 @@ new function() {
             var text;
             if (node.getElementsByTagName('tspan').length > 0) {
                 var point = getPoint(node);
-                var size = getSize(node);
+                var size = new Size(0, 0);
+
+                var content = '';
+                var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
+
+                for (var i = 0; i < nodeElements.length; i++) {
+                    content += nodeElements[i].textContent.trim() + ((i < nodeElements.length - 1) ? '\n' : '');
+                    var rect = nodeElements[i].getBoundingClientRect();
+                    size = size.add(new Size(rect.width, rect.height));
+                }
 
                 // for figma/non-paper.js exported texts:
                 if (size.isZero()) {
@@ -314,24 +323,19 @@ new function() {
                     size = size.add(new paper.Size(svgRect.width, svgRect.height));
                 }
 
-                var content = '';
-                var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
-
-                for (var i = 0; i < nodeElements.length; i++) {
-                    content += nodeElements[i].textContent.trim() + ((i < nodeElements.length - 1) ? '\n' : '');
-                    size = size.add(getSize(nodeElements[i]));
-                }
-
                 // Figma Import lacks x,y attributes. Transform is applied automatically in the core of Item class
-                if (Boolean(getAttribute(node, 'transform'))) {
+                // debugger;
+                var transform = getAttribute(node, 'transform');
+                if (transform && transform.indexOf('translate') !== -1) {
                     text = new AreaText(new Rectangle(new Point(0, 0), size));
+                    text._updatePosition(true);
                 } else {
-                    // we need only starting point of the text (if it was not extracted from node itself):
                     point = point.add(getPoint(nodeElements[0]));
                     text = new AreaText(new Rectangle(point, size));
-
-                    // adjust text position:
-                    text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize - 0.5)), size));
+                    if (transform && transform.indexOf('rotate') !== -1) {
+                        text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize)), size));
+                        text._updatePosition(false, 'center');
+                    }
                 }
 
                 text.setContent(content);

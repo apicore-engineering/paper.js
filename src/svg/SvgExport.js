@@ -269,9 +269,10 @@ new function() {
         var size = item.bounds.size;
         attribs.width = size.width;
         attribs.height = size.height;
-
-        var x1 = attribs.x + -0.025 * item.fontSize;
-        var y1 = attribs.y + attribs.height + item.fontSize - size.height + 0.5;
+        var x1 = attribs.x - 0.025 * item.fontSize;
+        var y1 = attribs.transform && attribs.transform.indexOf('rotate') !== -1
+            ? attribs.y + item.fontSize + 0.5
+            : item.rectangle.center.y + (item.fontSize / (20/3));
 
         delete attribs.y;
         delete attribs.x;
