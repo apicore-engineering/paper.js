@@ -337,7 +337,7 @@ new function() {
                     point = point.add(getPoint(nodeElements[0]));
                     text = new AreaText(new Rectangle(point, size));
                     if (Boolean(getAttribute(node,'role'))) {
-                        text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize)), size));
+                        text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0, -text.fontSize)), size));
                         text._updatePosition(false, 'center');
                     }
                 }

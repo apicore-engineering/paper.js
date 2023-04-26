@@ -269,7 +269,7 @@ new function() {
         var size = item.bounds.size;
         attribs.width = size.width;
         attribs.height = size.height;
-        var x1 = attribs.x - 0.025 * item.fontSize;
+        var x1 = attribs.x;
         var y1 = attribs.y + item.fontSize;
 
         delete attribs.y;
@@ -335,8 +335,6 @@ new function() {
                 }
                 if (type === 'style') {
                     style.push(entry.attribute + ': ' + value);
-                } else if (type === 'spacing') {
-                    attrs[entry.attribute] = Base.calculateLetterSpacing(value, item[SvgStyles.fontSize.get]());
                 } else {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
