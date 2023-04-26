@@ -270,14 +270,13 @@ new function() {
         attribs.width = size.width;
         attribs.height = size.height;
         var x1 = attribs.x - 0.025 * item.fontSize;
-        var y1 = attribs.transform && attribs.transform.indexOf('rotate') !== -1
-            ? attribs.y + item.fontSize + 0.5
-            : item.rectangle.center.y + (item.fontSize / (20/3));
+        var y1 = attribs.y + item.fontSize;
 
         delete attribs.y;
         delete attribs.x;
         var node = SvgElement.create('text', attribs,
             formatter);
+        node.setAttribute('role', 'exported');
         delete attribs.width;
         delete attribs.height;
         delete attribs.generator;

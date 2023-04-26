@@ -294,7 +294,7 @@ new function() {
                     getPoint(node, 'x2', 'y2'));
         },
 
-        text: function(node) {
+        text: function(node, type, options) {
             // Not supported by Paper.js
             // x: multiple values for x
             // y: multiple values for y
@@ -310,11 +310,15 @@ new function() {
 
                 var content = '';
                 var nodeElements = Array.prototype.slice.call( node.getElementsByTagName('tspan') );
+                var diffBetweenLinesPx = 0;
 
                 for (var i = 0; i < nodeElements.length; i++) {
                     content += nodeElements[i].textContent.trim() + ((i < nodeElements.length - 1) ? '\n' : '');
                     var rect = nodeElements[i].getBoundingClientRect();
                     size = size.add(new Size(rect.width, rect.height));
+                    if (i === 1) {
+                        diffBetweenLinesPx = (+nodeElements[i].getAttribute('y') - (+nodeElements[i-1].getAttribute('y')));
+                    }
                 }
 
                 // for figma/non-paper.js exported texts:
@@ -332,12 +336,15 @@ new function() {
                 } else {
                     point = point.add(getPoint(nodeElements[0]));
                     text = new AreaText(new Rectangle(point, size));
-                    if (transform && transform.indexOf('rotate') !== -1) {
+                    if (Boolean(getAttribute(node,'role'))) {
                         text.setRectangle(new paper.Rectangle(point.add(new paper.Point(0.025 * text.fontSize, -text.fontSize)), size));
                         text._updatePosition(false, 'center');
                     }
                 }
 
+                if (diffBetweenLinesPx !== 0) {
+                    text.style.leading = diffBetweenLinesPx;
+                }
                 text.setContent(content);
             } else {
                 text = new PointText(getPoint(node).add(
